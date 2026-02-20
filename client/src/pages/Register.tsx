@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { NeoButton } from '../components/ui/NeoButton'
-import { RocketIllustration } from '../assets/illustrations/RocketIllustration'
+import { MatchingIllustration } from '../assets/illustrations/MatchingIllustration'
 
 const SECTORS = ['AgriTech', 'FinTech', 'EdTech', 'CleanEnergy', 'HealthTech', 'D2C', 'DeepTech', 'GovTech', 'SaaS', 'Mobility']
 const STAGES = ['Idea', 'MVP', 'Early Revenue', 'Scaling']
@@ -88,19 +88,55 @@ export default function Register() {
       className="min-h-screen flex"
     >
       {/* Left panel */}
-      <div className="hidden md:flex md:w-[40%] bg-terracotta text-chalk-white p-12 flex-col justify-center">
-        <p className="font-display text-3xl italic font-bold mb-8">
-          Your next chapter starts here.
-        </p>
-        <div className="w-48 h-56 text-chalk-white/90 mb-8">
-          <RocketIllustration className="w-full h-full" />
+      <div className="hidden md:flex md:w-[40%] bg-gradient-to-br from-terracotta via-[#c4622d] to-[#b8865a] text-chalk-white p-8 flex-col justify-center relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
+        
+        <div className="relative z-10">
+          <h2 className="font-display text-3xl font-bold mb-2 leading-tight">
+            {role === 'startup' ? 'Connect with Investors' : 'Discover Startups'}
+          </h2>
+          <p className="font-body text-base text-chalk-white/90 mb-6 leading-relaxed">
+            {role === 'startup' 
+              ? 'Join India\'s premier startup-investor matching platform. Get discovered by aligned investors in minutes.'
+              : 'Access curated deal flow from India\'s most promising startups. AI-powered matching ensures perfect fit.'}
+          </p>
+          
+          <div className="w-full max-w-[280px] mx-auto mb-6">
+            <MatchingIllustration className="w-full h-full opacity-90" />
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-chalk-white text-xs">✓</span>
+              </div>
+              <div>
+                <p className="font-body font-semibold text-sm">Verified Network</p>
+                <p className="font-body text-xs text-chalk-white/80">Authenticated investors and startups only</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-chalk-white text-xs">✓</span>
+              </div>
+              <div>
+                <p className="font-body font-semibold text-sm">AI-Powered Matching</p>
+                <p className="font-body text-xs text-chalk-white/80">14-signal compatibility scoring</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-chalk-white text-xs">✓</span>
+              </div>
+              <div>
+                <p className="font-body font-semibold text-sm">Zero Fees</p>
+                <p className="font-body text-xs text-chalk-white/80">100% free to register and connect</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <ul className="font-body text-sm space-y-2">
-          <li>✓ Verified Investor Network</li>
-          <li>✓ Smart Matching Engine</li>
-          <li>✓ Zero Cold Outreach</li>
-          <li>✓ 100% Free to Register</li>
-        </ul>
       </div>
 
       {/* Right panel */}

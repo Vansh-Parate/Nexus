@@ -61,7 +61,7 @@ export const Hero = () => {
                         </div>
 
                         {/* Orbit 1 (Inner) */}
-                        <div className="orbit-track w-[24rem] h-[24rem]" style={{ animationDuration: '24s' }}>
+                        <div className="orbit-track w-[24rem] h-[24rem]" style={{ animationDuration: '24s', '--orbit-duration': '24s' } as React.CSSProperties}>
                             <div className="orbit-card-wrapper" style={{ transform: 'translate(-50%, -50%) rotate(0deg)' }}>
                                 <div className="orbit-card glass-card px-4 py-3 rounded-lg flex items-center gap-3 border-l-4 border-l-[#d4a574]" style={{ animationDuration: '24s' }}>
                                     <div className="w-8 h-8 rounded-full bg-[#f7f4f0] flex items-center justify-center text-[#d4a574]">
@@ -76,9 +76,9 @@ export const Hero = () => {
                         </div>
 
                         {/* Orbit 2 (Outer) — cards spaced 180° apart to prevent overlap */}
-                        <div className="orbit-track w-[32rem] h-[32rem]" style={{ animationDuration: '36s', animationDirection: 'reverse' }}>
+                        <div className="orbit-track w-[32rem] h-[32rem]" style={{ animationDuration: '36s', animationDirection: 'reverse' } as React.CSSProperties}>
                             <div className="orbit-card-wrapper" style={{ transform: 'translate(-50%, -50%) rotate(0deg)' }}>
-                                <div className="orbit-card glass-card px-4 py-3 rounded-lg flex items-center gap-3 border-l-4 border-l-[#7a9b76]" style={{ animationDuration: '36s', animationDirection: 'reverse' }}>
+                                <div className="orbit-card orbit-card-reverse glass-card px-4 py-3 rounded-lg flex items-center gap-3 border-l-4 border-l-[#7a9b76]" style={{ animationDuration: '36s' }}>
                                     <div className="w-8 h-8 rounded-full bg-[#f7f4f0] flex items-center justify-center text-[#7a9b76]">
                                         <Icon icon="solar:wallet-money-linear" />
                                     </div>
@@ -90,7 +90,7 @@ export const Hero = () => {
                             </div>
 
                             <div className="orbit-card-wrapper" style={{ transform: 'translate(-50%, -50%) rotate(180deg)' }}>
-                                <div className="orbit-card glass-card px-4 py-3 rounded-lg flex items-center gap-3 border-l-4 border-l-[#d89b6a]" style={{ animationDuration: '36s', animationDirection: 'reverse' }}>
+                                <div className="orbit-card orbit-card-reverse glass-card px-4 py-3 rounded-lg flex items-center gap-3 border-l-4 border-l-[#d89b6a]" style={{ animationDuration: '36s' }}>
                                     <div className="w-8 h-8 rounded-full bg-[#f7f4f0] flex items-center justify-center text-[#d89b6a]">
                                         <Icon icon="solar:heart-pulse-linear" />
                                     </div>
