@@ -4,6 +4,7 @@ import { NeoCard } from '../../components/ui/NeoCard'
 import { NeoButton } from '../../components/ui/NeoButton'
 import { Sidebar } from '../../components/layout/Sidebar'
 import { ProfileProgressBar } from '../../components/ui/ProfileProgressBar'
+import { StartupProfileView } from '../../components/startup/StartupProfileView'
 import { api } from '../../api/client'
 
 const SECTORS = ['AgriTech', 'FinTech', 'EdTech', 'CleanEnergy', 'HealthTech', 'D2C', 'DeepTech', 'GovTech', 'SaaS', 'Mobility']
@@ -23,6 +24,7 @@ interface StartupProfile {
   traction?: Record<string, unknown>
   documents?: { pitchDeck?: string; financials?: string; [k: string]: string | undefined }
   foundedAt?: string
+  profileCompletedAt?: string
   [k: string]: unknown
 }
 
@@ -59,6 +61,11 @@ export default function StartupEditProfile() {
         if (docs.pitchDeck || docs.financials) completed.add(4)
         if (completed.size >= 4) completed.add(5)
         setCompletedSteps(completed)
+        if (p?.profileCompletedAt) {
+          setCurrentStep(6)
+          setSubmitted(true)
+          completed.add(6)
+        }
       })
       .catch(() => setProfile(null))
       .finally(() => setLoading(false))
@@ -83,7 +90,10 @@ export default function StartupEditProfile() {
     if (!profile) return
     const isValid = validateStep()
     if (!isValid) return
-    const ok = await saveStep(profile)
+    const payload = currentStep === 6
+      ? { ...profile, profileCompletedAt: new Date().toISOString() }
+      : profile
+    const ok = await saveStep(payload)
     if (!ok) return
     if (currentStep === 6) {
       setSubmitted(true)
@@ -152,6 +162,11 @@ export default function StartupEditProfile() {
     if (canGoBack || canGoForward) setCurrentStep(step)
   }
 
+  const handleEdit = () => {
+    setSubmitted(false)
+    setCurrentStep(0)
+  }
+
   if (loading || !profile)
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -159,6 +174,19 @@ export default function StartupEditProfile() {
       </div>
     )
 
+  // Render professional profile view when submitted
+  if (submitted) {
+    return (
+      <div className="min-h-screen flex">
+        <Sidebar />
+        <main className="flex-1 pl-[240px] p-8 overflow-auto">
+          <StartupProfileView profile={profile} onEdit={handleEdit} />
+        </main>
+      </div>
+    )
+  }
+
+  // Render wizard when not submitted
   return (
     <div className="min-h-screen flex">
       <Sidebar />
@@ -168,21 +196,17 @@ export default function StartupEditProfile() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-[720px] mx-auto"
         >
-          <h1 className="font-display text-3xl font-bold text-forest-ink mb-2">
-            {submitted ? 'Edit Profile' : 'Complete Your Profile'}
-          </h1>
+          <h1 className="font-display text-3xl font-bold text-forest-ink mb-2">Complete Your Profile</h1>
           <p className="font-body text-sm text-forest-ink/70 mb-6">
-            {submitted
-              ? 'You can update any section below. Changes are saved when you move to the next step.'
-              : 'Fill in each section and click Next to save. You can always come back to edit.'}
+            Fill in each section and click Next to save. You can always come back to edit.
           </p>
 
           <NeoCard className="p-4 mb-8">
             <ProfileProgressBar
-            currentStep={currentStep}
-            completedSteps={completedSteps}
-            onStepClick={(step) => goToStep(step)}
-          />
+              currentStep={currentStep}
+              completedSteps={completedSteps}
+              onStepClick={(step) => goToStep(step)}
+            />
           </NeoCard>
 
           <NeoCard className="p-8">
@@ -524,19 +548,10 @@ export default function StartupEditProfile() {
                 >
                   <h2 className="font-display text-2xl font-bold text-forest-ink">Submit</h2>
                   <hr className="border-t border-dashed border-border" />
-                  {submitted ? (
-                    <div className="text-center py-6">
-                      <p className="font-body text-forest-ink mb-4">✓ Profile saved successfully.</p>
-                      <p className="font-body text-sm text-forest-ink/70 mb-6">
-                        You can edit any step above to update your profile.
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="font-body text-forest-ink/80">
-                      Click &quot;Complete&quot; to save your profile. You can continue editing anytime from your
-                      dashboard.
-                    </p>
-                  )}
+                  <p className="font-body text-forest-ink/80">
+                    Click &quot;Complete&quot; to save your profile. You can continue editing anytime from your
+                    dashboard.
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -551,7 +566,7 @@ export default function StartupEditProfile() {
                 Previous
               </NeoButton>
               <NeoButton variant="primary" onClick={goNext} disabled={saving}>
-                {saving ? 'Saving...' : currentStep === 6 ? (submitted ? 'Saved ✓' : 'Complete') : 'Next →'}
+                {saving ? 'Saving...' : currentStep === 6 ? 'Complete' : 'Next →'}
               </NeoButton>
             </div>
           </NeoCard>

@@ -30,12 +30,21 @@ router.get('/:id', async (req, res) => {
   res.json(investor)
 })
 
+const ALLOWED_FIELDS = [
+  'fullName', 'firmName', 'investorType', 'preferredSectors', 'ticketMin', 'ticketMax',
+  'preferredStages', 'portfolioSize', 'thesis',
+]
+
 router.patch('/:id', authMiddleware, async (req, res) => {
   const investor = await prisma.investor.findUnique({ where: { id: req.params.id } })
   if (!investor || investor.userId !== req.userId) return res.status(404).json({ message: 'Not found' })
+  const data = {}
+  for (const key of ALLOWED_FIELDS) {
+    if (req.body[key] !== undefined) data[key] = req.body[key]
+  }
   const updated = await prisma.investor.update({
     where: { id: req.params.id },
-    data: req.body,
+    data,
   })
   res.json(updated)
 })

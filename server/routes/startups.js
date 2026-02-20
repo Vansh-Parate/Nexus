@@ -32,7 +32,7 @@ router.get('/:id', async (req, res) => {
 
 const ALLOWED_FIELDS = [
   'startupName', 'founderName', 'sector', 'stage', 'fundingSought',
-  'pitch', 'location', 'description', 'traction', 'useOfFunds', 'documents', 'foundedAt',
+  'pitch', 'location', 'description', 'traction', 'useOfFunds', 'documents', 'foundedAt', 'profileCompletedAt',
 ]
 
 router.patch('/:id', authMiddleware, async (req, res) => {

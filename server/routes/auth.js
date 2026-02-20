@@ -49,6 +49,7 @@ router.post('/register', async (req, res) => {
           fundingSought: Number(body.fundingSought) || 50,
           pitch: body.pitch || null,
           location: body.location || null,
+          description: body.description || null,
         },
       })
     } else {
