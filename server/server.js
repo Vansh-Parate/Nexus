@@ -22,30 +22,44 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
 const PORT = process.env.PORT || 3001
 
-// CORS configuration - allow localhost for dev and production frontend URL
+// CORS configuration - allow localhost for dev and production frontend URLs
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:5174',
+  'https://vega-gua2.vercel.app', // Vercel frontend
   process.env.FRONTEND_URL,
 ].filter(Boolean) // Remove undefined values
 
-// In production (Render), be more permissive with CORS to allow frontend
-const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER
+// Detect production environment (Render sets PORT, or check NODE_ENV)
+const isProduction = process.env.NODE_ENV === 'production' || 
+                     process.env.RENDER === 'true' || 
+                     (process.env.PORT && !process.env.PORT.includes('3001'))
+
+console.log(`CORS config - NODE_ENV: ${process.env.NODE_ENV}, PORT: ${process.env.PORT}, isProduction: ${isProduction}`)
+console.log(`Allowed origins: ${allowedOrigins.join(', ')}`)
 
 app.use(cors({ 
   origin: (origin, callback) => {
-    // In production, allow all origins (Render frontend can be on different domains)
-    // In development, only allow specific origins
+    // Always allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) {
+      callback(null, true)
+      return
+    }
+
+    // In production (Render/Vercel), allow all origins
     if (isProduction) {
       callback(null, true)
+      return
+    }
+
+    // Development: Check against allowed origins list
+    // Always allow Vercel frontend explicitly
+    if (origin.includes('vercel.app') || origin.includes('vega-gua2') || allowedOrigins.includes(origin)) {
+      callback(null, true)
     } else {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true)
-      } else {
-        callback(new Error('Not allowed by CORS'))
-      }
+      console.warn(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`)
+      callback(new Error('Not allowed by CORS'))
     }
   },
   credentials: true,
