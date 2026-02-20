@@ -25,6 +25,7 @@ export default function StartupMatches() {
   const [loading, setLoading] = useState(true)
   const [sector, setSector] = useState('')
   const [stage, setStage] = useState('')
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -65,29 +66,82 @@ export default function StartupMatches() {
   return (
     <div className="min-h-screen flex bg-chalk-white">
       <Sidebar />
-      <main className="flex-1 md:ml-[4.5rem] flex">
-        <aside className="w-[280px] shrink-0 p-6 border-r border-border bg-warm-sand/40">
-          <h2 className="font-display text-2xl font-bold text-forest-ink mb-4">Filter Investors</h2>
-          <select className="w-full font-body text-sm px-3 py-2 border border-border rounded-lg bg-chalk-white mb-4" value={sector} onChange={(e) => setSector(e.target.value)}>
-            <option value="">All Sectors</option>
-            <option value="EdTech">EdTech</option>
-            <option value="FinTech">FinTech</option>
-            <option value="SaaS">SaaS</option>
-          </select>
-          <select className="w-full font-body text-sm px-3 py-2 border border-border rounded-lg bg-chalk-white mb-4" value={stage} onChange={(e) => setStage(e.target.value)}>
-            <option value="">All Stages</option>
-            <option value="Idea">Idea</option>
-            <option value="MVP">MVP</option>
-            <option value="Early Revenue">Early Revenue</option>
-            <option value="Scaling">Scaling</option>
-          </select>
-          <NeoButton variant="primary" className="w-full">Apply Filters</NeoButton>
-          <button type="button" className="font-body text-sm mt-2 underline text-forest-ink" onClick={() => { setSector(''); setStage('') }}>Reset</button>
-        </aside>
-        <div className="flex-1 p-8 overflow-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl">
-            {loading ? <p className="font-body text-sm">Loading...</p> : matches.length === 0 ? (
-              <EmptyState illustration={<CompassIllustration />} message="No matches yet — try broadening your filters" />
+
+      <main className="flex-1 pl-[240px] flex">
+        {/* ================= MATCHES SECTION ================= */}
+        <div className="flex-1 p-10 overflow-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="max-w-6xl"
+          >
+            <div className="flex justify-end mb-4">
+              <div className="relative">
+                <NeoButton
+                  variant="outline"
+                  className="text-xs px-3 py-1.5"
+                  onClick={() => setFiltersOpen((open) => !open)}
+                >
+                  Filters
+                </NeoButton>
+                {filtersOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-chalk-white border border-border rounded-lg shadow-lg p-4 z-10 space-y-3">
+                    <div>
+                      <p className="font-body text-xs text-forest-ink/70 mb-1">
+                        Sector
+                      </p>
+                      <select
+                        className="w-full text-xs px-2 py-1.5 border rounded bg-white"
+                        value={sector}
+                        onChange={(e) => setSector(e.target.value)}
+                      >
+                        <option value="">All Sectors</option>
+                        <option value="EdTech">EdTech</option>
+                        <option value="FinTech">FinTech</option>
+                        <option value="SaaS">SaaS</option>
+                      </select>
+                    </div>
+                    <div>
+                      <p className="font-body text-xs text-forest-ink/70 mb-1">
+                        Stage
+                      </p>
+                      <select
+                        className="w-full text-xs px-2 py-1.5 border rounded bg-white"
+                        value={stage}
+                        onChange={(e) => setStage(e.target.value)}
+                      >
+                        <option value="">All Stages</option>
+                        <option value="Idea">Idea</option>
+                        <option value="MVP">MVP</option>
+                        <option value="Early Revenue">Early Revenue</option>
+                        <option value="Scaling">Scaling</option>
+                      </select>
+                    </div>
+                    <button
+                      type="button"
+                      className="text-xs underline text-forest-ink"
+                      onClick={() => {
+                        setSector('')
+                        setStage('')
+                      }}
+                    >
+                      Reset filters
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+            {loading ? (
+              <div className="text-center py-20">
+                <p className="text-sm text-forest-ink/60">
+                  Finding best investor matches...
+                </p>
+              </div>
+            ) : matches.length === 0 ? (
+              <EmptyState
+                illustration={<CompassIllustration />}
+                message="No matches yet — try broadening your filters"
+              />
             ) : (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
                 {matches.map((m) => (
