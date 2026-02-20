@@ -1,0 +1,61 @@
+startup_id,startup_name,industry,stage,location,funding_required_lakhs,description
+ST001,QuizWiz Learning,EdTech,Pre-Seed,Bangalore,150,EdTech-focused innovative solution using modern technology
+ST002,Zoho Analytics Pro,SaaS,Series B,Chennai,261,SaaS-focused innovative solution using modern technology
+ST003,VaultShield Security,Cybersecurity,Seed,Chennai,68,Cybersecurity-focused innovative solution using modern technology
+ST004,RupeeBridge Payments,FinTech,Series B,Hyderabad,241,FinTech-focused innovative solution using modern technology
+ST005,SecureLayer Labs,Cybersecurity,Pre-Seed,Chennai,376,Cybersecurity-focused innovative solution using modern technology
+ST006,MedBot Diagnostics,HealthTech,Seed,Bangalore,322,HealthTech-focused innovative solution using modern technology
+ST007,HealthKart Plus,HealthTech,Pre-Seed,Bangalore,31,HealthTech-focused innovative solution using modern technology
+ST008,CogniFlow AI,AI,Pre-Seed,Chennai,500,AI-focused innovative solution using modern technology
+ST009,DataMind Analytics,AI,Seed,Bangalore,236,AI-focused innovative solution using modern technology
+ST010,ShopNest Commerce,E-commerce,Seed,Chennai,411,E-commerce-focused innovative solution using modern technology
+ST011,ToolStack Software,SaaS,Seed,Mumbai,196,SaaS-focused innovative solution using modern technology
+ST012,NeuralScript AI,AI,Seed,Chennai,409,AI-focused innovative solution using modern technology
+ST013,ClinicConnect,HealthTech,Pre-Seed,Hyderabad,233,HealthTech-focused innovative solution using modern technology
+ST014,PromptForge Labs,AI,Pre-Seed,Delhi,115,AI-focused innovative solution using modern technology
+ST015,LendSwift,FinTech,Series A,Hyderabad,478,FinTech-focused innovative solution using modern technology
+ST016,TaskFlow HQ,SaaS,Seed,Delhi,175,SaaS-focused innovative solution using modern technology
+ST017,Martify Marketplace,E-commerce,Series B,Hyderabad,453,E-commerce-focused innovative solution using modern technology
+ST018,DevOpsKit SaaS,SaaS,Pre-Seed,Mumbai,265,SaaS-focused innovative solution using modern technology
+ST019,ModelForge AI,AI,Series B,Mumbai,232,AI-focused innovative solution using modern technology
+ST020,DocBridge Health,HealthTech,Series A,Chennai,64,HealthTech-focused innovative solution using modern technology
+ST021,DeepCode AI,AI,Pre-Seed,Mumbai,418,AI-focused innovative solution using modern technology
+ST022,BazaarNine,E-commerce,Series B,Chennai,209,E-commerce-focused innovative solution using modern technology
+ST023,LogicCraft AI,AI,Pre-Seed,Bangalore,260,AI-focused innovative solution using modern technology
+ST024,PharmaTrack Health,HealthTech,Series B,Mumbai,351,HealthTech-focused innovative solution using modern technology
+ST025,GradeUp Academy,EdTech,Seed,Mumbai,26,EdTech-focused innovative solution using modern technology
+ST026,CartPulse,E-commerce,Seed,Hyderabad,227,E-commerce-focused innovative solution using modern technology
+ST027,MedRecord Systems,HealthTech,Series A,Delhi,255,HealthTech-focused innovative solution using modern technology
+ST028,VisionAI Labs,AI,Pre-Seed,Hyderabad,216,AI-focused innovative solution using modern technology
+ST029,Firewall One,Cybersecurity,Seed,Hyderabad,285,Cybersecurity-focused innovative solution using modern technology
+ST030,UniLearn Platform,EdTech,Series B,Chennai,48,EdTech-focused innovative solution using modern technology
+ST031,EncryptIQ,Cybersecurity,Series A,Hyderabad,311,Cybersecurity-focused innovative solution using modern technology
+ST032,SkillStack EdTech,EdTech,Series B,Delhi,268,EdTech-focused innovative solution using modern technology
+ST033,InvoiceCloud SaaS,SaaS,Series A,Hyderabad,20,SaaS-focused innovative solution using modern technology
+ST034,DealCart Commerce,E-commerce,Series A,Hyderabad,254,E-commerce-focused innovative solution using modern technology
+ST035,PayZen FinTech,FinTech,Seed,Mumbai,345,FinTech-focused innovative solution using modern technology
+ST036,RetailStack,E-commerce,Seed,Bangalore,460,E-commerce-focused innovative solution using modern technology
+ST037,BreachGuard Security,Cybersecurity,Series A,Bangalore,36,Cybersecurity-focused innovative solution using modern technology
+ST038,WalletStack,FinTech,Pre-Seed,Bangalore,251,FinTech-focused innovative solution using modern technology
+ST039,SecureVault Cyber,Cybersecurity,Series A,Delhi,147,Cybersecurity-focused innovative solution using modern technology
+ST040,RemitFlow,FinTech,Seed,Delhi,196,FinTech-focused innovative solution using modern technology
+ST041,LoanTap Digital,FinTech,Seed,Delhi,101,FinTech-focused innovative solution using modern technology
+ST042,MerchantHub,E-commerce,Seed,Delhi,356,E-commerce-focused innovative solution using modern technology
+ST043,Automa AI,AI,Series A,Delhi,252,AI-focused innovative solution using modern technology
+ST044,CRM Pro Suite,SaaS,Series B,Bangalore,78,SaaS-focused innovative solution using modern technology
+ST045,LabLink Health,HealthTech,Series B,Chennai,195,HealthTech-focused innovative solution using modern technology
+ST046,ZeroTrust Security,Cybersecurity,Seed,Bangalore,152,Cybersecurity-focused innovative solution using modern technology
+ST047,PatientFirst Health,HealthTech,Seed,Chennai,330,HealthTech-focused innovative solution using modern technology
+ST048,HackShield Labs,Cybersecurity,Pre-Seed,Bangalore,135,Cybersecurity-focused innovative solution using modern technology
+ST049,TeamSync SaaS,SaaS,Seed,Mumbai,38,SaaS-focused innovative solution using modern technology
+ST050,EnterpriseFlow,SaaS,Series B,Mumbai,298,SaaS-focused innovative solution using modern technology
+ST051,AgentAI Systems,AI,Series B,Hyderabad,134,AI-focused innovative solution using modern technology
+ST052,Inference Labs,AI,Pre-Seed,Hyderabad,222,AI-focused innovative solution using modern technology
+ST053,CyberNest Security,Cybersecurity,Series A,Chennai,357,Cybersecurity-focused innovative solution using modern technology
+ST054,InsureTech Pay,FinTech,Series A,Mumbai,84,FinTech-focused innovative solution using modern technology
+ST055,Splitwise Pro,FinTech,Series A,Bangalore,56,FinTech-focused innovative solution using modern technology
+ST056,TeleMed Health,HealthTech,Series A,Mumbai,400,HealthTech-focused innovative solution using modern technology
+ST057,ProjectBase SaaS,SaaS,Series A,Bangalore,86,SaaS-focused innovative solution using modern technology
+ST058,SellerVerse Commerce,E-commerce,Pre-Seed,Mumbai,322,E-commerce-focused innovative solution using modern technology
+ST059,SupplyChain Mart,E-commerce,Series B,Hyderabad,107,E-commerce-focused innovative solution using modern technology
+ST060,BuyLocal Marketplace,E-commerce,Pre-Seed,Mumbai,213,E-commerce-focused innovative solution using modern technology

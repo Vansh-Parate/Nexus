@@ -7,7 +7,10 @@
     "start": "node server.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:seed": "node prisma/seed.js"
+    "db:seed": "node prisma/seed.js",
+    "ml:build": "python scripts/build_regression_data.py",
+    "ml:train": "python scripts/train_model.py",
+    "ml:setup": "npm run ml:build && npm run ml:train"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

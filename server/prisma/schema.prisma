@@ -1,3 +1,7 @@
+// VEGA — Startup India Matchmaking
+// Data theme: startups, investors, match scores, connection requests.
+// Auth: JWT (httpOnly). Matching: sector + stage + ticket size.
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -88,4 +92,51 @@ enum RequestStatus {
   pending
   accepted
   declined
+}
+
+// ========== CSV-backed catalog (investors.csv, startups.csv, interactions.csv) ==========
+
+model InvestorCatalog {
+  id                 String   @id @default(cuid())
+  investorId        String   @unique // e.g. IN001
+  investorName      String
+  preferredIndustry String
+  preferredStage    String
+  geographyFocus    String
+  ticketMinLakhs    Int
+  ticketMaxLakhs    Int
+  thesis            String?  @db.Text
+
+  interactions Interaction[]
+}
+
+model StartupCatalog {
+  id                  String   @id @default(cuid())
+  startupId           String   @unique // e.g. ST001
+  startupName         String
+  industry            String
+  stage               String
+  location            String
+  fundingRequiredLakhs Int
+  description         String?  @db.Text
+
+  interactions Interaction[]
+}
+
+model Interaction {
+  id              String          @id @default(cuid())
+  interactionType InteractionType
+
+  startupCatalogId  String
+  startupCatalog    StartupCatalog @relation(fields: [startupCatalogId], references: [id], onDelete: Cascade)
+  investorCatalogId String
+  investorCatalog   InvestorCatalog @relation(fields: [investorCatalogId], references: [id], onDelete: Cascade)
+
+  @@unique([startupCatalogId, investorCatalogId])
+}
+
+enum InteractionType {
+  viewed
+  shortlisted
+  contacted
 }
