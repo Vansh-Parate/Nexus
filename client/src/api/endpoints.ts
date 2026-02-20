@@ -36,3 +36,21 @@ export const requestsApi = {
 export const dashboardApi = {
   get: () => api.get('/dashboard'),
 }
+
+export const matchScoreApi = {
+  explain: (startup: Record<string, unknown>, investor: Record<string, unknown>) =>
+    api.post('/match-score/explain', { startup, investor }),
+  predict: (startup: Record<string, unknown>, investor: Record<string, unknown>) =>
+    api.post('/match-score', { startup, investor }),
+}
+
+export const savedApi = {
+  list: () => api.get('/saved'),
+  save: (investorId: string) => api.post(`/saved/${investorId}`),
+  remove: (investorId: string) => api.delete(`/saved/${investorId}`),
+}
+
+export const pitchApi = {
+  generate: (type?: 'pitch' | 'description' | 'both') =>
+    api.post('/pitch/generate', { type: type || 'both' }),
+}

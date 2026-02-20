@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { authMiddleware } from '../middleware/authMiddleware.js'
 import { computeMatchScore } from '../utils/matchingEngine.js'
+import { rankInvestorsForStartupML, rankStartupsForInvestorML } from '../utils/mlMatchingEngine.js'
 
 const prisma = new PrismaClient()
 const router = Router()
@@ -38,27 +39,50 @@ async function handleStartupDashboard(userId, res) {
     })
     if (!startup) return res.status(404).json({ message: 'Startup profile not found' })
 
-    // 2. Fetch all investors and compute matches
+    // 2. Fetch all investors and compute matches using ML ranking
     const investors = await prisma.investor.findMany({
         include: { user: { select: { id: true, name: true } } },
     })
 
-    const matchedInvestors = investors
-        .map((inv) => ({
-            id: inv.id,
-            userId: inv.userId,
-            name: inv.user?.name ?? inv.fullName,
-            firmName: inv.firmName,
-            investorType: inv.investorType,
-            preferredSectors: inv.preferredSectors,
-            preferredStages: inv.preferredStages,
-            ticketMin: inv.ticketMin,
-            ticketMax: inv.ticketMax,
-            thesis: inv.thesis,
-            matchScore: computeMatchScore(startup, inv),
-        }))
-        .filter((inv) => inv.matchScore > 0)
-        .sort((a, b) => b.matchScore - a.matchScore)
+    // Use ML-based ranking for intelligent sorting
+    let matchedInvestors
+    try {
+        matchedInvestors = await rankInvestorsForStartupML(startup, investors)
+        matchedInvestors = matchedInvestors
+            .map((inv) => ({
+                id: inv.id,
+                userId: inv.userId,
+                name: inv.user?.name ?? inv.fullName,
+                firmName: inv.firmName,
+                investorType: inv.investorType,
+                preferredSectors: inv.preferredSectors,
+                preferredStages: inv.preferredStages,
+                ticketMin: inv.ticketMin,
+                ticketMax: inv.ticketMax,
+                thesis: inv.thesis,
+                matchScore: inv.matchScore,
+            }))
+            .filter((inv) => inv.matchScore > 0)
+    } catch (err) {
+        // Fallback to simple scoring if ML fails
+        console.warn('ML ranking failed, using fallback:', err.message)
+        matchedInvestors = investors
+            .map((inv) => ({
+                id: inv.id,
+                userId: inv.userId,
+                name: inv.user?.name ?? inv.fullName,
+                firmName: inv.firmName,
+                investorType: inv.investorType,
+                preferredSectors: inv.preferredSectors,
+                preferredStages: inv.preferredStages,
+                ticketMin: inv.ticketMin,
+                ticketMax: inv.ticketMax,
+                thesis: inv.thesis,
+                matchScore: computeMatchScore(startup, inv),
+            }))
+            .filter((inv) => inv.matchScore > 0)
+            .sort((a, b) => b.matchScore - a.matchScore)
+    }
 
     const totalMatches = matchedInvestors.length
     const topMatchScore = matchedInvestors.length > 0 ? matchedInvestors[0].matchScore : 0
@@ -210,13 +234,27 @@ async function handleInvestorDashboard(userId, res) {
         include: { user: { select: { id: true, name: true } } },
     })
 
-    const matchedStartups = startups
-        .map((s) => ({
-            ...s,
-            matchScore: computeMatchScore(s, investor),
-        }))
-        .filter((s) => s.matchScore > 0)
-        .sort((a, b) => b.matchScore - a.matchScore)
+    // Use ML-based ranking for intelligent sorting
+    let matchedStartups
+    try {
+        matchedStartups = await rankStartupsForInvestorML(investor, startups)
+        matchedStartups = matchedStartups
+            .map((s) => ({
+                ...s,
+                matchScore: s.matchScore,
+            }))
+            .filter((s) => s.matchScore > 0)
+    } catch (err) {
+        // Fallback to simple scoring if ML fails
+        console.warn('ML ranking failed for investor dashboard, using fallback:', err.message)
+        matchedStartups = startups
+            .map((s) => ({
+                ...s,
+                matchScore: computeMatchScore(s, investor),
+            }))
+            .filter((s) => s.matchScore > 0)
+            .sort((a, b) => b.matchScore - a.matchScore)
+    }
 
     res.json({
         investor,

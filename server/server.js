@@ -10,6 +10,8 @@ import startupsRoutes from './routes/startups.js'
 import investorsRoutes from './routes/investors.js'
 import requestsRoutes from './routes/requests.js'
 import catalogRoutes from './routes/catalog.js'
+import savedRoutes from './routes/saved.js'
+import pitchRoutes from './routes/pitch.js'
 import matchScoreRoutes from './routes/matchScore.js'
 import dashboardRoutes from './routes/dashboard.js'
 
@@ -47,6 +49,8 @@ app.use('/api/requests', requestsRoutes)
 app.use('/api/catalog', catalogRoutes)
 app.use('/api/match-score', matchScoreRoutes)
 app.use('/api/dashboard', dashboardRoutes)
+app.use('/api/saved', savedRoutes)
+app.use('/api/pitch', pitchRoutes)
 
 app.get('/api/health', (req, res) => res.json({ ok: true }))
 

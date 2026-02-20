@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import { useAuthStore } from './store/authStore'
 
 import Landing from './pages/Landing'
@@ -33,6 +34,7 @@ function ProtectedRoute({
 
 export default function App() {
   return (
+    <>
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/register" element={<Register />} />
@@ -53,5 +55,7 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
+  </>
   )
 }

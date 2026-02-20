@@ -53,6 +53,7 @@ model Startup {
 
   connectionRequestsSent    ConnectionRequest[] @relation("SentByStartup")
   connectionRequestsReceived ConnectionRequest[] @relation("ReceivedByStartup")
+  savedInvestors            SavedInvestor[]
 }
 
 model Investor {
@@ -73,6 +74,7 @@ model Investor {
 
   connectionRequestsSent    ConnectionRequest[] @relation("SentByInvestor")
   connectionRequestsReceived ConnectionRequest[] @relation("ReceivedByInvestor")
+  savedByStartups           SavedInvestor[]
 }
 
 model ConnectionRequest {
@@ -90,6 +92,19 @@ model ConnectionRequest {
   investorReceiver Investor? @relation("ReceivedByInvestor", fields: [toInvestorId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// Startups can "save" investors to revisit later
+model SavedInvestor {
+  id         String   @id @default(cuid())
+  startupId  String
+  investorId String
+  createdAt  DateTime @default(now())
+
+  startup  Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  investor Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@unique([startupId, investorId])
 }
 
 enum RequestStatus {

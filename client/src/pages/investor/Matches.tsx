@@ -84,6 +84,12 @@ export default function InvestorMatches() {
 
         <div className="flex-1 p-8 overflow-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xs text-forest-ink/60 font-medium">AI-Powered Ranking</span>
+              <span className="text-[10px] bg-terracotta/10 text-terracotta px-2 py-0.5 rounded-full font-semibold">
+                ML Sorted
+              </span>
+            </div>
             {loading ? (
               <p className="font-body text-sm">Loading...</p>
             ) : error ? (

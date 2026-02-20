@@ -2,12 +2,14 @@ import { Router } from 'express'
 import { spawn } from 'child_process'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { explainMatch } from '../utils/mlMatchingEngine.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const router = Router()
 
 const PYTHON = process.env.PYTHON || 'python'
 const SCRIPT_PATH = path.join(__dirname, '..', 'scripts', 'predict_score.py')
+const EXPLAIN_SCRIPT_PATH = path.join(__dirname, '..', 'scripts', 'explain_match.py')
 
 function toSnake(obj) {
   if (!obj || typeof obj !== 'object') return obj
@@ -76,6 +78,25 @@ router.post('/', async (req, res) => {
   } catch (e) {
     console.error(e)
     res.status(500).json({ message: 'Failed to compute match score' })
+  }
+})
+
+/**
+ * POST /api/match-score/explain
+ * Get detailed match explanation with contributions breakdown
+ */
+router.post('/explain', async (req, res) => {
+  try {
+    const { startup, investor } = req.body || {}
+    if (!startup || !investor) {
+      return res.status(400).json({ error: 'Request body must include startup and investor objects' })
+    }
+
+    const explanation = await explainMatch(startup, investor)
+    res.json(explanation)
+  } catch (e) {
+    console.error('Match explanation error:', e)
+    res.status(500).json({ error: e.message || 'Failed to explain match' })
   }
 })
 

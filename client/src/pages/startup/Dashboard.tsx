@@ -21,7 +21,18 @@ export default function StartupDashboard() {
 
   // Panel State
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [selectedInvestor, setSelectedInvestor] = useState<{ name: string; type: string; score: number } | null>(null);
+  const [selectedInvestor, setSelectedInvestor] = useState<{ 
+    name: string
+    type: string
+    score: number
+    id?: string
+    firmName?: string
+    preferredSectors?: string[]
+    preferredStages?: string[]
+    ticketMin?: number
+    ticketMax?: number
+    thesis?: string
+  } | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -38,8 +49,13 @@ export default function StartupDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleOpenPanel = (investor: { name: string; type: string; score: number }) => {
-    setSelectedInvestor(investor);
+  const handleOpenPanel = (investor: { name: string; type: string; score: number; id: string; firmName?: string; preferredSectors?: string[]; preferredStages?: string[]; ticketMin?: number; ticketMax?: number; thesis?: string }) => {
+    // Find full investor data from dashboard matches
+    const fullInvestor = dashboardData?.matches?.find((m: any) => m.id === investor.id) || investor;
+    setSelectedInvestor({
+      ...fullInvestor,
+      ...investor,
+    });
     setIsPanelOpen(true);
   };
 
@@ -51,11 +67,27 @@ export default function StartupDashboard() {
     return (
       <div className="font-body text-[#3e3530] bg-[#fffbf8] min-h-screen text-sm antialiased">
         <Sidebar />
-        <div className="md:ml-[4.5rem] w-full min-h-screen flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-10 h-10 rounded-full border-2 border-[#d4a574] border-t-transparent animate-spin"></div>
-            <p className="text-[#9b918a] text-sm">Loading your dashboard...</p>
-          </div>
+        <div className="md:ml-[4.5rem] w-full min-w-0">
+          <main className="w-full max-w-6xl mx-auto px-5 sm:px-6 md:px-8 lg:px-10 pb-24 md:pb-12 pt-6 md:pt-8 flex flex-col gap-8">
+            <div className="h-10 w-48 bg-[#e8e3dc]/60 rounded animate-pulse" />
+            <section className="grid grid-cols-1 lg:grid-cols-10 gap-5">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-28 bg-[#e8e3dc]/50 rounded-xl animate-pulse" />
+              ))}
+            </section>
+            <div className="h-16 bg-[#e8e3dc]/50 rounded-xl animate-pulse w-full" />
+            <section className="space-y-4">
+              <div className="h-8 w-64 bg-[#e8e3dc]/50 rounded animate-pulse" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-56 bg-[#e8e3dc]/40 rounded-xl animate-pulse" />
+                ))}
+              </div>
+            </section>
+            <div className="flex items-center justify-center py-4">
+              <div className="w-8 h-8 rounded-full border-2 border-[#d4a574] border-t-transparent animate-spin" />
+            </div>
+          </main>
         </div>
       </div>
     );

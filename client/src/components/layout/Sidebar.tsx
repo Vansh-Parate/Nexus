@@ -6,15 +6,14 @@ import { authApi } from '../../api/endpoints';
 const navStartup = [
   { to: '/startup/dashboard', icon: 'solar:widget-linear', label: 'Dashboard' },
   { to: '/startup/matches', icon: 'solar:users-group-rounded-linear', label: 'Matches' },
+  { to: '/startup/matches?saved=1', icon: 'solar:bookmark-linear', label: 'Saved' },
   { to: '/startup/requests', icon: 'solar:chat-round-line-linear', label: 'Requests', hasIndicator: true },
-  { to: '#', icon: 'solar:bookmark-linear', label: 'Saved' },
 ];
 
 const navInvestor = [
   { to: '/investor/dashboard', icon: 'solar:widget-linear', label: 'Dashboard' },
   { to: '/investor/matches', icon: 'solar:users-group-rounded-linear', label: 'Matches' },
   { to: '/investor/requests', icon: 'solar:chat-round-line-linear', label: 'Requests', hasIndicator: true },
-  { to: '#', icon: 'solar:bookmark-linear', label: 'Saved' },
 ];
 
 export function Sidebar() {
@@ -60,7 +59,7 @@ export function Sidebar() {
         ))}
       </div>
 
-      {/* Bottom section — Profile, Settings, Logout */}
+      {/* Bottom section — Profile, Logout */}
       <div className="hidden md:flex flex-col gap-1 mt-auto items-center w-full">
         <NavLink
           to={profileLink}
@@ -73,14 +72,6 @@ export function Sidebar() {
         >
           <Icon icon="solar:user-rounded-linear" className="text-[1.2rem]" strokeWidth="1.5" />
           <span className="text-[0.6rem] font-medium leading-none tracking-wide">Profile</span>
-        </NavLink>
-
-        <NavLink
-          to="#"
-          className="flex flex-col items-center justify-center gap-0.5 w-full py-2.5 rounded-xl text-[#9b918a] hover:bg-[#e8e3dc]/50 hover:text-[#3e3530] transition-all duration-200"
-        >
-          <Icon icon="solar:settings-linear" className="text-[1.2rem]" strokeWidth="1.5" />
-          <span className="text-[0.6rem] font-medium leading-none tracking-wide">Settings</span>
         </NavLink>
 
         <button

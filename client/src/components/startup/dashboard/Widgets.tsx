@@ -1,5 +1,6 @@
 import { Icon } from '@iconify/react';
-import { useState } from 'react';
+import { requestsApi, savedApi } from '../../../api/endpoints';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 /* ═══════════════════════════════════════════
@@ -280,6 +281,15 @@ export function RecommendedInvestors({
 }) {
     const [filter, setFilter] = useState<string>('All');
     const [page, setPage] = useState(0);
+    const [savingIds, setSavingIds] = useState<Record<string, boolean>>({});
+    const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+
+    useEffect(() => {
+        savedApi.list().then((r) => {
+            const ids = new Set((r.data.saved || []).map((s: { id: string }) => s.id));
+            setSavedIds(ids);
+        }).catch(() => {});
+    }, []);
     const types = ['All', 'Angel', 'VC', 'Impact Fund'];
 
     const filtered = filter === 'All'
@@ -403,15 +413,60 @@ export function RecommendedInvestors({
                         <div className="mt-auto flex gap-2 items-center">
                             <button
                                 onClick={() => onOpenPanel({ name: investor.name, type: investor.investorType, score: investor.matchScore, id: investor.id })}
-                                className="flex-1 py-2 border-[1.5px] border-[#d4a574] bg-transparent text-[#d4a574] rounded-lg text-[13px] font-medium transition-colors hover:bg-[rgba(212,165,116,0.08)]"
+                                className="flex-1 py-2 border-[1.5px] border-[#d4a574] bg-transparent text-[#d4a574] rounded-lg text-[13px] font-medium transition-colors hover:bg-[rgba(212,165,116,0.08)] cursor-pointer"
                             >
                                 View Details
                             </button>
-                            <button className="flex-[1.2] py-2 bg-[#d4a574] text-white rounded-lg text-[13px] font-semibold transition-colors hover:bg-[#b8865a]">
+                            <button
+                                className="flex-[1.2] py-2 bg-[#d4a574] text-white rounded-lg text-[13px] font-semibold transition-colors hover:bg-[#b8865a] cursor-pointer"
+                                onClick={async () => {
+                                    try {
+                                        await requestsApi.send(investor.id, 'investor');
+                                        toast.success('Connection request sent!');
+                                    } catch (err) {
+                                        console.error('Failed to send connect request:', err);
+                                        toast.error('Failed to send request. Try again.');
+                                    }
+                                }}
+                            >
                                 Connect
                             </button>
-                            <button className="w-9 h-9 flex items-center justify-center rounded-lg border-[1.5px] border-[#e8e3dc] text-[#9b918a] hover:border-[#d4a574] hover:text-[#d4a574] transition-colors flex-shrink-0">
-                                <Icon icon="solar:bookmark-linear" className="text-lg" />
+                            <button
+                                className={`w-9 h-9 flex items-center justify-center rounded-lg border-[1.5px] flex-shrink-0 transition-colors cursor-pointer ${
+                                    savedIds.has(investor.id)
+                                        ? 'border-[#d4a574] text-[#d4a574] bg-[rgba(212,165,116,0.08)]'
+                                        : 'border-[#e8e3dc] text-[#9b918a] hover:border-[#d4a574] hover:text-[#d4a574]'
+                                }`}
+                                disabled={savingIds[investor.id]}
+                                title={savedIds.has(investor.id) ? 'Remove from saved' : 'Save investor'}
+                                onClick={async () => {
+                                    setSavingIds((prev) => ({ ...prev, [investor.id]: true }));
+                                    try {
+                                        if (savedIds.has(investor.id)) {
+                                            await savedApi.remove(investor.id);
+                                            setSavedIds((prev) => {
+                                                const next = new Set(prev);
+                                                next.delete(investor.id);
+                                                return next;
+                                            });
+                                            toast.success('Removed from saved');
+                                        } else {
+                                            await savedApi.save(investor.id);
+                                            setSavedIds((prev) => new Set(prev).add(investor.id));
+                                            toast.success('Investor saved');
+                                        }
+                                    } catch (err) {
+                                        console.error('Failed to toggle saved investor:', err);
+                                        toast.error('Failed to save. Try again.');
+                                    } finally {
+                                        setSavingIds((prev) => ({ ...prev, [investor.id]: false }));
+                                    }
+                                }}
+                            >
+                                <Icon
+                                    icon={savedIds.has(investor.id) ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
+                                    className="text-lg"
+                                />
                             </button>
                         </div>
                     </div>
