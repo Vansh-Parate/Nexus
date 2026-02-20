@@ -5,7 +5,7 @@ import { NeoCard } from '../../components/ui/NeoCard'
 import { NeoButton } from '../../components/ui/NeoButton'
 import { Badge } from '../../components/ui/Badge'
 import { Sidebar } from '../../components/layout/Sidebar'
-import { api } from '../../api/client'
+import { api, isNetworkError } from '../../api/client'
 
 interface Match {
   id: string
@@ -21,9 +21,23 @@ interface Match {
 export default function InvestorDashboard() {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchMatches = () => {
+    setError(null)
+    setLoading(true)
+    api
+      .get('/matches')
+      .then((res) => setMatches(res.data.matches || []))
+      .catch((err) => {
+        setMatches([])
+        setError(isNetworkError(err) ? 'Server unavailable. Start the backend with `npm run dev` in the server folder.' : 'Failed to load matches.')
+      })
+      .finally(() => setLoading(false))
+  }
 
   useEffect(() => {
-    api.get('/matches').then((res) => setMatches(res.data.matches || [])).finally(() => setLoading(false))
+    fetchMatches()
   }, [])
 
   const avgScore = matches.length ? Math.round(matches.reduce((a, m) => a + m.matchScore, 0) / matches.length) : 0
@@ -31,7 +45,7 @@ export default function InvestorDashboard() {
   return (
     <div className="min-h-screen flex">
       <Sidebar />
-      <main className="flex-1 pl-[240px] p-8">
+      <main className="flex-1 md:ml-[4.5rem] p-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -67,6 +81,11 @@ export default function InvestorDashboard() {
             </div>
             {loading ? (
               <p className="font-body text-sm text-forest-ink/70">Loading...</p>
+            ) : error ? (
+              <NeoCard className="p-12 text-center">
+                <p className="font-body text-forest-ink/80">{error}</p>
+                <NeoButton variant="primary" className="mt-4" onClick={fetchMatches}>Retry</NeoButton>
+              </NeoCard>
             ) : matches.length === 0 ? (
               <NeoCard className="p-12 text-center">
                 <p className="font-body text-forest-ink/80">Complete your preferences to see startups.</p>

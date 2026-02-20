@@ -1,7 +1,7 @@
 import { api } from './client'
 
 export const authApi = {
-  register: (data: { role: string; [k: string]: unknown }) => api.post('/auth/register', data),
+  register: (data: { role: string;[k: string]: unknown }) => api.post('/auth/register', data),
   login: (email: string, password: string, role: string) =>
     api.post('/auth/login', { email, password, role }),
   me: () => api.get('/auth/me'),
@@ -31,4 +31,8 @@ export const requestsApi = {
     api.post('/requests', { toId, toRole }),
   accept: (id: string) => api.post(`/requests/${id}/accept`),
   decline: (id: string) => api.post(`/requests/${id}/decline`),
+}
+
+export const dashboardApi = {
+  get: () => api.get('/dashboard'),
 }

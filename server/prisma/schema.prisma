@@ -45,9 +45,11 @@ model Startup {
   description  String?  @db.Text
   traction     Json?    // { revenue, users, growth }
   useOfFunds   String?  @db.Text
-  foundedAt    DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  documents         Json?      // { pitchDeck?: string, financials?: string }
+  foundedAt         DateTime?
+  profileCompletedAt DateTime? // set when user completes onboarding
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   connectionRequestsSent    ConnectionRequest[] @relation("SentByStartup")
   connectionRequestsReceived ConnectionRequest[] @relation("ReceivedByStartup")

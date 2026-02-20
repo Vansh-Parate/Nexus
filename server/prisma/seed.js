@@ -147,6 +147,7 @@ async function seedDemoAppStartups() {
         fundingSought: parseInt(r.funding_required_lakhs, 10) || 0,
         pitch: r.description || null,
         location: r.location || null,
+        description: r.description || null,
       },
       create: {
         userId: user.id,
@@ -157,6 +158,7 @@ async function seedDemoAppStartups() {
         fundingSought: parseInt(r.funding_required_lakhs, 10) || 0,
         pitch: r.description || null,
         location: r.location || null,
+        description: r.description || null,
       },
     })
   }
@@ -236,6 +238,7 @@ async function main() {
       stage: 'Early Revenue',
       fundingSought: 100,
       pitch: 'AI-powered learning paths for K-12.',
+      description: 'AI-powered learning paths for K-12.',
       location: 'Karnataka',
     },
   })

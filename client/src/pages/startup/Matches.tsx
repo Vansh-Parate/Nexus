@@ -7,7 +7,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Sidebar } from '../../components/layout/Sidebar'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { CompassIllustration } from '../../assets/illustrations/CompassIllustration'
-import { api } from '../../api/client'
+import { api, isNetworkError } from '../../api/client'
 
 interface Match {
   id: string
@@ -23,43 +23,50 @@ interface Match {
 export default function StartupMatches() {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [sector, setSector] = useState('')
   const [stage, setStage] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
 
-  useEffect(() => {
-    const fetchMatches = async () => {
-      try {
-        setLoading(true)
+  const fetchMatches = async () => {
+    try {
+      setError(null)
+      setLoading(true)
 
-        const params: Record<string, string> = {}
-        if (sector) params.sector = sector
-        if (stage) params.stage = stage
+      const params: Record<string, string> = {}
+      if (sector) params.sector = sector
+      if (stage) params.stage = stage
 
-        const res = await api.get('/matches', { params })
+      const res = await api.get('/matches', { params })
 
-        const formatted: Match[] = (res.data.matches || []).map(
-          (m: any) => ({
-            id: m.id || m._id,
-            name: m.fullName ?? m.name ?? 'Unknown Investor',
-            firmName: m.firmName ?? undefined,
-            preferredSectors: m.preferredSectors || [],
-            preferredStages: m.preferredStages || [],
-            ticketMin: m.ticketMin ?? 0,
-            ticketMax: m.ticketMax ?? 0,
-            matchScore: m.matchScore ?? 0,
-          })
-        )
+      const formatted: Match[] = (res.data.matches || []).map(
+        (m: any) => ({
+          id: m.id || m._id,
+          name: m.fullName ?? m.name ?? 'Unknown Investor',
+          firmName: m.firmName ?? undefined,
+          preferredSectors: m.preferredSectors || [],
+          preferredStages: m.preferredStages || [],
+          ticketMin: m.ticketMin ?? 0,
+          ticketMax: m.ticketMax ?? 0,
+          matchScore: m.matchScore ?? 0,
+        })
+      )
 
-        setMatches(formatted)
-      } catch (error) {
-        console.error('Error fetching matches:', error)
-        setMatches([])
-      } finally {
-        setLoading(false)
-      }
+      setMatches(formatted)
+    } catch (err) {
+      console.error('Error fetching matches:', err)
+      setMatches([])
+      setError(
+        isNetworkError(err)
+          ? 'Server unavailable. Start the backend with `npm run dev` in the server folder.'
+          : 'Failed to load matches.'
+      )
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchMatches()
   }, [sector, stage])
 
@@ -137,6 +144,13 @@ export default function StartupMatches() {
                   Finding best investor matches...
                 </p>
               </div>
+            ) : error ? (
+              <NeoCard className="p-12 text-center">
+                <p className="font-body text-forest-ink/80">{error}</p>
+                <NeoButton variant="primary" className="mt-4" onClick={fetchMatches}>
+                  Retry
+                </NeoButton>
+              </NeoCard>
             ) : matches.length === 0 ? (
               <EmptyState
                 illustration={<CompassIllustration />}
@@ -151,7 +165,6 @@ export default function StartupMatches() {
                     transition={{ type: 'spring', stiffness: 200 }}
                   >
                     <NeoCard className="p-6 flex flex-col h-full hover:shadow-lg transition-all duration-300">
-
                       {/* ===== Header ===== */}
                       <div className="flex justify-between items-start mb-4">
                         <div>

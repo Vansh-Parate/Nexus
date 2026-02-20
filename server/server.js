@@ -11,6 +11,7 @@ import investorsRoutes from './routes/investors.js'
 import requestsRoutes from './routes/requests.js'
 import catalogRoutes from './routes/catalog.js'
 import matchScoreRoutes from './routes/matchScore.js'
+import dashboardRoutes from './routes/dashboard.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -45,6 +46,7 @@ app.use('/api/investors', investorsRoutes)
 app.use('/api/requests', requestsRoutes)
 app.use('/api/catalog', catalogRoutes)
 app.use('/api/match-score', matchScoreRoutes)
+app.use('/api/dashboard', dashboardRoutes)
 
 app.get('/api/health', (req, res) => res.json({ ok: true }))
 

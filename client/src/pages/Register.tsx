@@ -74,7 +74,7 @@ export default function Register() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.message || 'Registration failed')
-      window.location.href = role === 'startup' ? '/startup/dashboard' : '/investor/dashboard'
+      window.location.href = role === 'startup' ? '/startup/profile/edit' : '/investor/dashboard'
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
     } finally {
