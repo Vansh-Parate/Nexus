@@ -7,7 +7,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Sidebar } from '../../components/layout/Sidebar'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { CompassIllustration } from '../../assets/illustrations/CompassIllustration'
-import { api } from '../../api/client'
+import { api, isNetworkError } from '../../api/client'
 
 interface Match {
   id: string
@@ -23,14 +23,28 @@ interface Match {
 export default function StartupMatches() {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [sector, setSector] = useState('')
   const [stage, setStage] = useState('')
 
-  useEffect(() => {
+  const fetchMatches = () => {
+    setError(null)
+    setLoading(true)
     const params: Record<string, string> = {}
     if (sector) params.sector = sector
     if (stage) params.stage = stage
-    api.get('/matches', { params }).then((res) => setMatches(res.data.matches || [])).finally(() => setLoading(false))
+    api
+      .get('/matches', { params })
+      .then((res) => setMatches(res.data.matches || []))
+      .catch((err) => {
+        setMatches([])
+        setError(isNetworkError(err) ? 'Server unavailable. Start the backend with `npm run dev` in the server folder.' : 'Failed to load matches.')
+      })
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchMatches()
   }, [sector, stage])
 
   return (
@@ -57,7 +71,12 @@ export default function StartupMatches() {
         </aside>
         <div className="flex-1 p-8 overflow-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl">
-            {loading ? <p className="font-body text-sm">Loading...</p> : matches.length === 0 ? (
+            {loading ? <p className="font-body text-sm">Loading...</p> : error ? (
+              <NeoCard className="p-12 text-center">
+                <p className="font-body text-forest-ink/80">{error}</p>
+                <NeoButton variant="primary" className="mt-4" onClick={fetchMatches}>Retry</NeoButton>
+              </NeoCard>
+            ) : matches.length === 0 ? (
               <EmptyState illustration={<CompassIllustration />} message="No matches yet — try broadening your filters" />
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

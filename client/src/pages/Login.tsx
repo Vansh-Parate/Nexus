@@ -106,9 +106,16 @@ export default function Login() {
         <p className="font-body text-sm text-center mt-6 text-forest-ink/80">
           — or —
         </p>
-        <p className="font-body text-sm text-center mt-2">
-          <Link to="/register" className="underline text-terracotta">Create an account</Link>
-        </p>
+        <div className="font-body text-sm text-center mt-2 space-y-1">
+          <p>
+            <Link to="/register" className="underline text-terracotta">Create an account</Link>
+          </p>
+          {role === 'startup' && (
+            <p>
+              <Link to="/startup/profile/edit" className="underline text-blue-600">Complete your startup profile</Link>
+            </p>
+          )}
+        </div>
       </div>
     </motion.div>
   )

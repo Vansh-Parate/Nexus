@@ -75,8 +75,9 @@ router.post('/register', async (req, res) => {
     })
     res.status(201).json({ user: u })
   } catch (e) {
-    console.error(e)
-    res.status(500).json({ message: 'Registration failed' })
+    console.error('Registration error:', e)
+    const message = process.env.NODE_ENV === 'development' ? (e?.message || 'Registration failed') : 'Registration failed'
+    res.status(500).json({ message })
   }
 })
 
@@ -101,8 +102,9 @@ router.post('/login', async (req, res) => {
       },
     })
   } catch (e) {
-    console.error(e)
-    res.status(500).json({ message: 'Login failed' })
+    console.error('Login error:', e)
+    const message = process.env.NODE_ENV === 'development' ? (e?.message || 'Login failed') : 'Login failed'
+    res.status(500).json({ message })
   }
 })
 
