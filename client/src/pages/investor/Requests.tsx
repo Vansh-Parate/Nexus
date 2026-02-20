@@ -5,6 +5,8 @@ import { NeoCard } from '../../components/ui/NeoCard'
 import { NeoButton } from '../../components/ui/NeoButton'
 import { Badge } from '../../components/ui/Badge'
 import { Sidebar } from '../../components/layout/Sidebar'
+import { PdfViewerModal } from '../../components/ui/PdfViewerModal'
+import { SuccessIllustration } from '../../assets/illustrations/SuccessIllustration'
 import { api } from '../../api/client'
 
 export default function InvestorRequests() {
@@ -14,8 +16,22 @@ export default function InvestorRequests() {
     api.get('/requests').then((res) => setData(res.data))
   }, [])
 
-  const received = (data.received || []) as Array<{ id: string; status: string; startupSender?: { startupName: string } }>
+  type ReceivedItem = {
+    id: string
+    status: string
+    message?: string | null
+    startupSender?: {
+      id: string
+      startupName: string
+      founderName?: string
+      sector?: string
+      pitch?: string | null
+      pitchDeckUrl?: string | null
+    }
+  }
+  const received = (data.received || []) as ReceivedItem[]
   const sent = (data.sent || []) as Array<{ id: string; status: string }>
+  const [pdfViewUrl, setPdfViewUrl] = useState<string | null>(null)
 
   return (
     <div className="min-h-screen flex">
@@ -34,17 +50,41 @@ export default function InvestorRequests() {
               ) : (
                 <div className="space-y-4">
                   {received.map((r) => (
-                    <NeoCard key={r.id} className="p-4 flex items-center gap-4 flex-wrap">
-                      <div className="w-12 h-12 rounded-md bg-terracotta flex items-center justify-center font-display font-bold text-chalk-white">S</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-display font-bold text-forest-ink">{r.startupSender?.startupName || 'Startup'}</p>
-                      </div>
-                      <Badge variant={r.status === 'accepted' ? 'sector' : r.status === 'declined' ? 'status' : 'stage'}>{r.status}</Badge>
-                      {r.status === 'pending' && (
-                        <div className="flex gap-2">
-                          <NeoButton variant="primary" className="bg-dusty-sage/90 text-forest-ink" onClick={() => api.post(`/requests/${r.id}/accept`).then(() => api.get('/requests').then((res) => setData(res.data)))}>Accept ✓</NeoButton>
-                          <NeoButton variant="primary" className="bg-clay-red/90 text-chalk-white" onClick={() => api.post(`/requests/${r.id}/decline`).then(() => api.get('/requests').then((res) => setData(res.data)))}>Decline ✗</NeoButton>
+                    <NeoCard key={r.id} className="p-5 flex flex-col gap-3">
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-md bg-terracotta flex items-center justify-center font-display font-bold text-chalk-white">S</div>
+                          <SuccessIllustration className="h-8 w-8 text-terracotta shrink-0" aria-hidden />
                         </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-display font-bold text-forest-ink">{r.startupSender?.startupName || 'Startup'}</p>
+                          <p className="font-body text-xs text-forest-ink/60">Pitch received</p>
+                          {r.startupSender?.founderName && (
+                            <p className="font-body text-xs text-forest-ink/70">{r.startupSender.founderName} · {r.startupSender.sector}</p>
+                          )}
+                        </div>
+                        <Badge variant={r.status === 'accepted' ? 'sector' : r.status === 'declined' ? 'status' : 'stage'}>{r.status}</Badge>
+                        {r.status === 'pending' && (
+                          <div className="flex gap-2">
+                            <NeoButton variant="primary" className="bg-dusty-sage/90 text-forest-ink" onClick={() => api.post(`/requests/${r.id}/accept`).then(() => api.get('/requests').then((res) => setData(res.data)))}>Accept ✓</NeoButton>
+                            <NeoButton variant="primary" className="bg-clay-red/90 text-chalk-white" onClick={() => api.post(`/requests/${r.id}/decline`).then(() => api.get('/requests').then((res) => setData(res.data)))}>Decline ✗</NeoButton>
+                          </div>
+                        )}
+                      </div>
+                      {r.startupSender?.pitch && (
+                        <p className="font-body text-sm text-forest-ink/85 border-l-2 border-terracotta/40 pl-3">{r.startupSender.pitch}</p>
+                      )}
+                      {r.message && (
+                        <p className="font-body text-sm text-forest-ink/80"><span className="text-forest-ink/60">Personal note: </span>{r.message}</p>
+                      )}
+                      {r.startupSender?.pitchDeckUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setPdfViewUrl(r.startupSender!.pitchDeckUrl!)}
+                          className="font-body text-sm text-terracotta underline hover:no-underline text-left"
+                        >
+                          View pitch deck (PDF)
+                        </button>
                       )}
                     </NeoCard>
                   ))}
@@ -67,6 +107,9 @@ export default function InvestorRequests() {
           </Tabs.Root>
         </motion.div>
       </main>
+      {pdfViewUrl && (
+        <PdfViewerModal src={pdfViewUrl} onClose={() => setPdfViewUrl(null)} />
+      )}
     </div>
   )
 }

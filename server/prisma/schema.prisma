@@ -40,6 +40,7 @@ model Startup {
   stage        String   // Idea | MVP | Early Revenue | Scaling
   fundingSought Int    // in Lakhs
   pitch        String?  @db.Text
+  pitchDeckUrl String?
   location     String?
   description  String?  @db.Text
   traction     Json?    // { revenue, users, growth }
@@ -80,6 +81,7 @@ model ConnectionRequest {
   fromInvestorId String?
   toStartupId   String?
   toInvestorId  String?
+  message     String?  @db.Text
   startupSender   Startup?  @relation("SentByStartup", fields: [fromStartupId], references: [id], onDelete: Cascade)
   investorSender Investor? @relation("SentByInvestor", fields: [fromInvestorId], references: [id], onDelete: Cascade)
   startupReceiver  Startup?  @relation("ReceivedByStartup", fields: [toStartupId], references: [id], onDelete: Cascade)

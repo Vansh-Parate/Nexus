@@ -10,6 +10,7 @@ import StartupMatches from './pages/startup/Matches'
 import StartupProfile from './pages/startup/Profile'
 import StartupEditProfile from './pages/startup/EditProfile'
 import StartupRequests from './pages/startup/Requests'
+import StartupSendPitch from './pages/startup/SendPitch'
 
 import InvestorDashboard from './pages/investor/Dashboard'
 import InvestorMatches from './pages/investor/Matches'
@@ -42,6 +43,7 @@ export default function App() {
       <Route path="/startup/profile/edit" element={<ProtectedRoute allowedRoles={['startup']}><StartupEditProfile /></ProtectedRoute>} />
       <Route path="/startup/profile/:id" element={<StartupProfile />} />
       <Route path="/startup/requests" element={<ProtectedRoute allowedRoles={['startup']}><StartupRequests /></ProtectedRoute>} />
+      <Route path="/startup/pitch/send/:investorId" element={<ProtectedRoute allowedRoles={['startup']}><StartupSendPitch /></ProtectedRoute>} />
 
       <Route path="/investor/dashboard" element={<ProtectedRoute allowedRoles={['investor']}><InvestorDashboard /></ProtectedRoute>} />
       <Route path="/investor/matches" element={<ProtectedRoute allowedRoles={['investor']}><InvestorMatches /></ProtectedRoute>} />

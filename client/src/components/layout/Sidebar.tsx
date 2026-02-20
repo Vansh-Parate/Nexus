@@ -42,7 +42,7 @@ export function Sidebar() {
       <div className="flex flex-row md:flex-col gap-1 md:gap-1 w-full px-2 md:px-0 items-center justify-center">
         {navItems.map((item) => (
           <NavLink
-            key={item.to}
+            key={item.label}
             to={item.to}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 w-14 h-14 md:w-full md:h-auto md:py-2.5 rounded-xl transition-all duration-200 relative ${isActive

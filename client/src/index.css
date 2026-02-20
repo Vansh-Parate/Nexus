@@ -222,10 +222,13 @@ body {
     top: 0;
     left: 50%;
     transform: translate(-50%, -50%);
+    z-index: 10;
+    pointer-events: none;
 }
 
 .orbit-card {
     animation: orbit-counter-rotate linear infinite;
+    pointer-events: auto;
 }
 
 /* Staggered Load */

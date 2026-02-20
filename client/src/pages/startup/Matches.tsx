@@ -14,9 +14,9 @@ interface Match {
   name: string
   firmName?: string
   preferredSectors: string[]
+  preferredStages: string[]
   ticketMin: number
   ticketMax: number
-  preferredStages: string[]
   matchScore: number
 }
 
@@ -27,14 +27,43 @@ export default function StartupMatches() {
   const [stage, setStage] = useState('')
 
   useEffect(() => {
-    const params: Record<string, string> = {}
-    if (sector) params.sector = sector
-    if (stage) params.stage = stage
-    api.get('/matches', { params }).then((res) => setMatches(res.data.matches || [])).finally(() => setLoading(false))
+    const fetchMatches = async () => {
+      try {
+        setLoading(true)
+
+        const params: Record<string, string> = {}
+        if (sector) params.sector = sector
+        if (stage) params.stage = stage
+
+        const res = await api.get('/matches', { params })
+
+        const formatted: Match[] = (res.data.matches || []).map(
+          (m: any) => ({
+            id: m.id || m._id,
+            name: m.fullName ?? m.name ?? 'Unknown Investor',
+            firmName: m.firmName ?? undefined,
+            preferredSectors: m.preferredSectors || [],
+            preferredStages: m.preferredStages || [],
+            ticketMin: m.ticketMin ?? 0,
+            ticketMax: m.ticketMax ?? 0,
+            matchScore: m.matchScore ?? 0,
+          })
+        )
+
+        setMatches(formatted)
+      } catch (error) {
+        console.error('Error fetching matches:', error)
+        setMatches([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchMatches()
   }, [sector, stage])
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-chalk-white">
       <Sidebar />
       <main className="flex-1 md:ml-[4.5rem] flex">
         <aside className="w-[280px] shrink-0 p-6 border-r border-border bg-warm-sand/40">
@@ -60,23 +89,84 @@ export default function StartupMatches() {
             {loading ? <p className="font-body text-sm">Loading...</p> : matches.length === 0 ? (
               <EmptyState illustration={<CompassIllustration />} message="No matches yet — try broadening your filters" />
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
                 {matches.map((m) => (
-                  <NeoCard key={m.id} className="p-6 flex flex-col">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-display text-xl font-bold text-forest-ink">{m.name}</h3>
-                      <span className="font-body text-sm font-bold bg-terracotta/15 text-terracotta px-2 py-0.5 rounded-md">{m.matchScore}%</span>
-                    </div>
-                    <p className="font-body text-xs text-forest-ink/70 mb-3">{m.firmName || '—'}</p>
-                    <div className="flex flex-wrap gap-1 mb-2">
-                      {m.preferredSectors?.slice(0, 3).map((s) => <Badge key={s} variant="stage">{s}</Badge>)}
-                    </div>
-                    <p className="font-body text-xs text-forest-ink/80 mb-3">₹{m.ticketMin}L – ₹{m.ticketMax}L</p>
-                    <div className="mt-auto flex gap-2">
-                      <Link to={`/investor/profile/${m.id}`}><NeoButton variant="outline" className="text-sm">View Profile</NeoButton></Link>
-                      <NeoButton variant="primary" className="text-sm">Send Request →</NeoButton>
-                    </div>
-                  </NeoCard>
+                  <motion.div
+                    key={m.id}
+                    whileHover={{ y: -5 }}
+                    transition={{ type: 'spring', stiffness: 200 }}
+                  >
+                    <NeoCard className="p-6 flex flex-col h-full hover:shadow-lg transition-all duration-300">
+
+                      {/* ===== Header ===== */}
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-lg font-bold text-forest-ink">
+                            {m.name}
+                          </h3>
+                          <p className="text-xs text-forest-ink/60">
+                            {m.firmName || 'Independent Investor'}
+                          </p>
+                        </div>
+
+                        <span className="text-sm font-bold text-terracotta">
+                          {m.matchScore}%
+                        </span>
+                      </div>
+
+                      {/* ===== Match Progress Bar ===== */}
+                      <div className="w-full h-2 bg-border rounded-full overflow-hidden mb-4">
+                        <div
+                          className="h-full bg-terracotta transition-all duration-500"
+                          style={{ width: `${m.matchScore}%` }}
+                        />
+                      </div>
+
+                      {/* ===== Sectors ===== */}
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {m.preferredSectors.slice(0, 3).map((s, i) => (
+                          <Badge key={`${m.id}-sector-${i}`} variant="stage">
+                            {s}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      {/* ===== Stages ===== */}
+                      <div className="flex flex-wrap gap-1 mb-4">
+                        {m.preferredStages.slice(0, 2).map((st, i) => (
+                          <Badge key={`${m.id}-stage-${i}`} variant="stage">
+                            {st}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      {/* ===== Ticket Range ===== */}
+                      <p className="text-sm font-medium text-forest-ink mb-6">
+                        Investment Range: ₹{m.ticketMin}L – ₹{m.ticketMax}L
+                      </p>
+
+                      {/* ===== Actions ===== */}
+                      <div className="mt-auto space-y-2">
+                        <Link to={`/investor/profile/${m.id}`}>
+                          <NeoButton
+                            variant="outline"
+                            className="w-full text-sm"
+                          >
+                            View Profile
+                          </NeoButton>
+                        </Link>
+
+                        <Link to={`/startup/pitch/send/${m.id}`}>
+                          <NeoButton
+                            variant="primary"
+                            className="w-full text-sm"
+                          >
+                            Send Pitch Request →
+                          </NeoButton>
+                        </Link>
+                      </div>
+                    </NeoCard>
+                  </motion.div>
                 ))}
               </div>
             )}
