@@ -14,8 +14,25 @@ export default function StartupRequests() {
     api.get('/requests').then((res) => setData(res.data))
   }, [])
 
-  const received = (data.received || []) as Array<{ id: string; status: string; investorSender?: { fullName: string; firmName?: string } }>
-  const sent = (data.sent || []) as Array<{ id: string; status: string }>
+  const refresh = () => api.get('/requests').then((res) => setData(res.data))
+
+  const statusMeta = (status: string, acceptedBy: string, declinedBy: string) => {
+    if (status === 'accepted') return { label: 'Accepted', detail: acceptedBy }
+    if (status === 'declined') return { label: 'Declined', detail: declinedBy }
+    return { label: 'Pending', detail: 'Awaiting response' }
+  }
+
+  const received = (data.received || []) as Array<{
+    id: string
+    status: string
+    investorSender?: { fullName: string; firmName?: string }
+  }>
+  const sent = (data.sent || []) as Array<{
+    id: string
+    status: string
+    startupReceiver?: { startupName?: string }
+    investorReceiver?: { fullName?: string }
+  }>
 
   return (
     <div className="min-h-screen flex">
@@ -47,9 +64,14 @@ export default function StartupRequests() {
                       <Badge variant={r.status === 'accepted' ? 'sector' : r.status === 'declined' ? 'status' : 'stage'}>{r.status}</Badge>
                       {r.status === 'pending' && (
                         <div className="flex gap-2">
-                          <NeoButton variant="primary" className="bg-dusty-sage/90 text-forest-ink" onClick={() => api.post(`/requests/${r.id}/accept`).then(() => api.get('/requests').then((res) => setData(res.data)))}>Accept ✓</NeoButton>
-                          <NeoButton variant="primary" className="bg-clay-red/90 text-chalk-white" onClick={() => api.post(`/requests/${r.id}/decline`).then(() => api.get('/requests').then((res) => setData(res.data)))}>Decline ✗</NeoButton>
+                          <NeoButton variant="primary" className="bg-dusty-sage/90 text-forest-ink" onClick={() => api.post(`/requests/${r.id}/accept`).then(refresh)}>Accept ✓</NeoButton>
+                          <NeoButton variant="primary" className="bg-clay-red/90 text-chalk-white" onClick={() => api.post(`/requests/${r.id}/decline`).then(refresh)}>Decline ✗</NeoButton>
                         </div>
+                      )}
+                      {(r.status === 'accepted' || r.status === 'declined') && (
+                        <p className="font-body text-xs text-forest-ink/60 w-full">
+                          {statusMeta(r.status, 'Accepted by you', 'Declined by you').detail}
+                        </p>
                       )}
                     </NeoCard>
                   ))}
@@ -63,7 +85,21 @@ export default function StartupRequests() {
                 <div className="space-y-4">
                   {sent.map((r) => (
                     <NeoCard key={r.id} className="p-4 flex items-center gap-4">
-                      <Badge variant="stage">{r.status}</Badge>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-display font-bold text-forest-ink">
+                          {(r.investorReceiver?.fullName || r.startupReceiver?.startupName || 'Recipient')}
+                        </p>
+                        <p className="font-body text-xs text-forest-ink/60">
+                          {statusMeta(
+                            r.status,
+                            `Accepted by ${r.investorReceiver?.fullName || r.startupReceiver?.startupName || 'recipient'}`,
+                            `Declined by ${r.investorReceiver?.fullName || r.startupReceiver?.startupName || 'recipient'}`
+                          ).detail}
+                        </p>
+                      </div>
+                      <Badge variant={r.status === 'accepted' ? 'sector' : r.status === 'declined' ? 'status' : 'stage'}>
+                        {statusMeta(r.status, 'Accepted', 'Declined').label}
+                      </Badge>
                     </NeoCard>
                   ))}
                 </div>

@@ -27,6 +27,9 @@ export default function InvestorMatches() {
   const [sector, setSector] = useState('')
   const [stage, setStage] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [interestLoadingId, setInterestLoadingId] = useState<string | null>(null)
+  const [interestSentIds, setInterestSentIds] = useState<Set<string>>(() => new Set())
+  const [interestError, setInterestError] = useState<string | null>(null)
 
   const fetchMatches = () => {
     setError(null)
@@ -50,6 +53,21 @@ export default function InvestorMatches() {
 
   const applyFilters = () => {
     setShowFilters(false)
+  }
+
+  const expressInterest = async (startupId: string) => {
+    if (!startupId) return
+    if (interestLoadingId) return
+    setInterestError(null)
+    setInterestLoadingId(startupId)
+    try {
+      await api.post('/requests', { toId: startupId, toRole: 'startup' })
+      setInterestSentIds((prev) => new Set([...Array.from(prev), startupId]))
+    } catch (err: any) {
+      setInterestError(err?.response?.data?.message || 'Failed to send interest. Try again.')
+    } finally {
+      setInterestLoadingId(null)
+    }
   }
 
   return (
@@ -121,6 +139,10 @@ export default function InvestorMatches() {
                   Retry
                 </NeoButton>
               </NeoCard>
+            ) : interestError ? (
+              <NeoCard className="p-4 mb-4 border border-red-200 bg-red-50">
+                <p className="font-body text-sm text-red-700">{interestError}</p>
+              </NeoCard>
             ) : matches.length === 0 ? (
               <EmptyState
                 illustration={<CompassIllustration />}
@@ -148,7 +170,18 @@ export default function InvestorMatches() {
                       <Link to={`/startup/profile/${m.id}`}>
                         <NeoButton variant="outline" className="text-sm">View Pitch</NeoButton>
                       </Link>
-                      <NeoButton variant="primary" className="text-sm">Express Interest →</NeoButton>
+                      <NeoButton
+                        variant="primary"
+                        className="text-sm"
+                        onClick={() => expressInterest(m.id)}
+                        disabled={interestLoadingId === m.id || interestSentIds.has(m.id)}
+                      >
+                        {interestSentIds.has(m.id)
+                          ? 'Interest Sent'
+                          : interestLoadingId === m.id
+                            ? 'Sending...'
+                            : 'Express Interest →'}
+                      </NeoButton>
                     </div>
                   </NeoCard>
                 ))}

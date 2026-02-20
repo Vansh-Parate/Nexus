@@ -16,6 +16,14 @@ export default function InvestorRequests() {
     api.get('/requests').then((res) => setData(res.data))
   }, [])
 
+  const refresh = () => api.get('/requests').then((res) => setData(res.data))
+
+  const statusMeta = (status: string, acceptedBy: string, declinedBy: string) => {
+    if (status === 'accepted') return { label: 'Accepted', detail: acceptedBy }
+    if (status === 'declined') return { label: 'Declined', detail: declinedBy }
+    return { label: 'Pending', detail: 'Awaiting response' }
+  }
+
   type ReceivedItem = {
     id: string
     status: string
@@ -30,7 +38,12 @@ export default function InvestorRequests() {
     }
   }
   const received = (data.received || []) as ReceivedItem[]
-  const sent = (data.sent || []) as Array<{ id: string; status: string }>
+  const sent = (data.sent || []) as Array<{
+    id: string
+    status: string
+    startupReceiver?: { startupName?: string }
+    investorReceiver?: { fullName?: string }
+  }>
   const [pdfViewUrl, setPdfViewUrl] = useState<string | null>(null)
 
   return (
@@ -66,11 +79,16 @@ export default function InvestorRequests() {
                         <Badge variant={r.status === 'accepted' ? 'sector' : r.status === 'declined' ? 'status' : 'stage'}>{r.status}</Badge>
                         {r.status === 'pending' && (
                           <div className="flex gap-2">
-                            <NeoButton variant="primary" className="bg-dusty-sage/90 text-forest-ink" onClick={() => api.post(`/requests/${r.id}/accept`).then(() => api.get('/requests').then((res) => setData(res.data)))}>Accept ✓</NeoButton>
-                            <NeoButton variant="primary" className="bg-clay-red/90 text-chalk-white" onClick={() => api.post(`/requests/${r.id}/decline`).then(() => api.get('/requests').then((res) => setData(res.data)))}>Decline ✗</NeoButton>
+                            <NeoButton variant="primary" className="bg-dusty-sage/90 text-forest-ink" onClick={() => api.post(`/requests/${r.id}/accept`).then(refresh)}>Accept ✓</NeoButton>
+                            <NeoButton variant="primary" className="bg-clay-red/90 text-chalk-white" onClick={() => api.post(`/requests/${r.id}/decline`).then(refresh)}>Decline ✗</NeoButton>
                           </div>
                         )}
                       </div>
+                      {(r.status === 'accepted' || r.status === 'declined') && (
+                        <p className="font-body text-xs text-forest-ink/60">
+                          {statusMeta(r.status, 'Accepted by you', 'Declined by you').detail}
+                        </p>
+                      )}
                       {r.startupSender?.pitch && (
                         <p className="font-body text-sm text-forest-ink/85 border-l-2 border-terracotta/40 pl-3">{r.startupSender.pitch}</p>
                       )}
@@ -98,7 +116,21 @@ export default function InvestorRequests() {
                 <div className="space-y-4">
                   {sent.map((r) => (
                     <NeoCard key={r.id} className="p-4 flex items-center gap-4">
-                      <Badge variant="stage">{r.status}</Badge>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-display font-bold text-forest-ink">
+                          {(r.startupReceiver?.startupName || r.investorReceiver?.fullName || 'Recipient')}
+                        </p>
+                        <p className="font-body text-xs text-forest-ink/60">
+                          {statusMeta(
+                            r.status,
+                            `Accepted by ${r.startupReceiver?.startupName || r.investorReceiver?.fullName || 'recipient'}`,
+                            `Declined by ${r.startupReceiver?.startupName || r.investorReceiver?.fullName || 'recipient'}`
+                          ).detail}
+                        </p>
+                      </div>
+                      <Badge variant={r.status === 'accepted' ? 'sector' : r.status === 'declined' ? 'status' : 'stage'}>
+                        {statusMeta(r.status, 'Accepted', 'Declined').label}
+                      </Badge>
                     </NeoCard>
                   ))}
                 </div>
