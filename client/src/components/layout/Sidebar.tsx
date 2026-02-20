@@ -41,7 +41,7 @@ export function Sidebar() {
       <nav className="flex-1 py-4">
         {nav.map(({ to, label, icon: Icon }) => (
           <NavLink
-            key={to}
+            key={label}
             to={to}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg font-body text-sm transition-colors ${

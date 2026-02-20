@@ -109,9 +109,9 @@ export default function Landing() {
       {/* Sectors strip */}
       <section className="py-12 overflow-hidden">
         <div className="flex gap-4 animate-[scroll_30s_linear_infinite] w-max">
-          {[...SECTORS, ...SECTORS].map((s) => (
+          {[...SECTORS, ...SECTORS].map((s, i) => (
             <span
-              key={s}
+              key={`sector-${i}`}
               className="font-body text-sm px-4 py-2 bg-burnt-amber/25 text-forest-ink border border-border rounded-lg shrink-0"
             >
               {s}

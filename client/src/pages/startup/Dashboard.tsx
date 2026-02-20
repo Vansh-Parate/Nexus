@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { NeoCard } from '../../components/ui/NeoCard'
 import { NeoButton } from '../../components/ui/NeoButton'
@@ -19,6 +19,8 @@ interface Match {
 }
 
 export default function StartupDashboard() {
+  const location = useLocation()
+  const pitchSent = (location.state as { pitchSent?: boolean })?.pitchSent
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -33,6 +35,11 @@ export default function StartupDashboard() {
       <Sidebar />
       <main className="flex-1 pl-[240px] p-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-[1280px] mx-auto">
+          {pitchSent && (
+            <div className="mb-6 p-4 rounded-lg bg-terracotta/15 border border-terracotta/30 text-terracotta font-body text-sm">
+              Pitch sent successfully. The investor will review your request.
+            </div>
+          )}
           <h1 className="font-display text-3xl font-bold text-forest-ink mb-8">Dashboard</h1>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
             <NeoCard className="p-6">
@@ -77,12 +84,12 @@ export default function StartupDashboard() {
                     </div>
                     <p className="font-body text-xs text-forest-ink/70 mb-3">{m.firmName || '—'}</p>
                     <div className="flex flex-wrap gap-1 mb-3">
-                      {m.preferredSectors?.slice(0, 3).map((s) => <Badge key={s} variant="stage">{s}</Badge>)}
+                      {m.preferredSectors?.slice(0, 3).map((s, i) => <Badge key={`${m.id}-sector-${i}`} variant="stage">{s}</Badge>)}
                     </div>
                     <p className="font-body text-xs text-forest-ink/80">₹{m.ticketMin}L – ₹{m.ticketMax}L</p>
                     <div className="mt-auto pt-4 flex gap-2">
                       <Link to={`/investor/profile/${m.id}`}><NeoButton variant="outline" className="text-sm">View Profile</NeoButton></Link>
-                      <NeoButton variant="primary" className="text-sm">Send Request →</NeoButton>
+                      <Link to={`/startup/pitch/send/${m.id}`}><NeoButton variant="primary" className="text-sm">Send Pitch →</NeoButton></Link>
                     </div>
                   </NeoCard>
                 ))}
