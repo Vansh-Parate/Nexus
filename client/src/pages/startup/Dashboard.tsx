@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Sidebar } from '../../components/layout/Sidebar'
 import { api, isNetworkError } from '../../api/client'
 import {
@@ -27,6 +28,8 @@ interface Match {
 }
 
 export default function StartupDashboard() {
+  const location = useLocation()
+  const pitchSent = (location.state as { pitchSent?: boolean })?.pitchSent
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -69,6 +72,13 @@ export default function StartupDashboard() {
       <Sidebar />
 
       <main className="flex-1 pb-24 md:pb-12 md:ml-16 p-6 md:p-8 xl:p-12 max-w-7xl mx-auto flex flex-col gap-8 w-full transition-all duration-300">
+        {pitchSent && (
+          <div className="mb-4 p-4 rounded-lg bg-[#d4a574]/15 border border-[#d4a574]/30 text-[#d4a574] font-body text-sm">
+            Pitch sent successfully. The investor will review your request.
+          </div>
+        )}
+
+        {/* Section 1: Top Overview */}
         <section className="grid grid-cols-1 lg:grid-cols-10 gap-6">
           <StartupSnapshot />
           <MatchSummary />

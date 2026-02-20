@@ -8,6 +8,7 @@ server/node_modules/
 .env.local
 .env.*.local
 server/.env
+server/uploads/
 
 # Build outputs
 dist/

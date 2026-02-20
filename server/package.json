@@ -7,6 +7,7 @@
     "start": "node server.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:add-columns": "node prisma/run-add-columns.js",
     "db:seed": "node prisma/seed.js",
     "ml:build": "python scripts/build_regression_data.py",
     "ml:train": "python scripts/train_model.py",
@@ -18,6 +19,8 @@
     "cors": "^2.8.5",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "nodemailer": "^8.0.1",
     "prisma": "^5.22.0"
   },
   "devDependencies": {
