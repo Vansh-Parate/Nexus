@@ -62,3 +62,6 @@ Match score (0–100): Sector overlap 40 pts, Stage alignment 30 pts, Ticket siz
 ## License
 
 MIT
+
+## PPT Link
+https://drive.google.com/file/d/16EbfLw7duG6yjmSF7L5GkhDy7LYs29ge/view?usp=drivesdk
