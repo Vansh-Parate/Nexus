@@ -99,6 +99,7 @@ router.get('/', authMiddleware, async (req, res) => {
         stage: s.stage,
         fundingSought: s.fundingSought,
         pitch: s.pitch,
+        description: s.description,
         pitchDeckUrl: s.pitchDeckUrl,
         matchScore: s.matchScore,
         scoreSource: s.scoreSource || 'simple',

@@ -6,6 +6,7 @@ import { Sidebar } from '../../components/layout/Sidebar'
 import { Badge } from '../../components/ui/Badge'
 import { NeoButton } from '../../components/ui/NeoButton'
 import { api, isNetworkError } from '../../api/client'
+import { matchScoreApi, dashboardApi } from '../../api/endpoints'
 
 interface Match {
   id: string
@@ -16,6 +17,7 @@ interface Match {
   fundingSought: number
   pitch?: string
   matchScore: number
+  description?: string
 }
 
 type SortKey = 'score' | 'name' | 'funding'
@@ -23,8 +25,8 @@ type ViewMode = 'grid' | 'list'
 
 const PAGE_SIZE = 9
 
-function MatchCard({ match, idx, onExpress, interestSent, interestLoading }: {
-  match: Match; idx: number; onExpress: () => void; interestSent: boolean; interestLoading: boolean
+function MatchCard({ match, idx, onExpress, interestSent, interestLoading, naturalExplanation, loadingExplanation }: {
+  match: Match; idx: number; onExpress: () => void; interestSent: boolean; interestLoading: boolean; naturalExplanation?: string | null; loadingExplanation: boolean
 }) {
   const scoreColor = match.matchScore >= 80 ? 'text-accent-success' : match.matchScore >= 60 ? 'text-primary' : 'text-accent-danger'
   const scoreTrack = match.matchScore >= 80 ? 'bg-accent-success' : match.matchScore >= 60 ? 'bg-primary' : 'bg-accent-danger'
@@ -56,8 +58,20 @@ function MatchCard({ match, idx, onExpress, interestSent, interestLoading }: {
         </div>
       </div>
 
+      {/* Natural Language Explanation */}
+      {loadingExplanation ? (
+        <div className="mb-3 flex items-center gap-2 text-xs text-text-muted">
+          <Icon icon="solar:loading-circle-linear" className="animate-spin text-sm" />
+          <span>Analyzing match...</span>
+        </div>
+      ) : naturalExplanation ? (
+        <div className="mb-3 p-3 bg-primary/5 border border-primary/10 rounded-lg">
+          <p className="font-body text-xs text-text-primary leading-relaxed">{naturalExplanation}</p>
+        </div>
+      ) : null}
+
       {/* Pitch */}
-      {match.pitch && (
+      {match.pitch && !naturalExplanation && (
         <p className="font-body text-xs text-text-secondary line-clamp-2 mb-3 leading-relaxed">{match.pitch}</p>
       )}
 
@@ -87,8 +101,8 @@ function MatchCard({ match, idx, onExpress, interestSent, interestLoading }: {
   )
 }
 
-function MatchListRow({ match, idx, onExpress, interestSent, interestLoading }: {
-  match: Match; idx: number; onExpress: () => void; interestSent: boolean; interestLoading: boolean
+function MatchListRow({ match, idx, onExpress, interestSent, interestLoading, naturalExplanation, loadingExplanation }: {
+  match: Match; idx: number; onExpress: () => void; interestSent: boolean; interestLoading: boolean; naturalExplanation?: string | null; loadingExplanation: boolean
 }) {
   const scoreColor = match.matchScore >= 80 ? 'text-accent-success' : match.matchScore >= 60 ? 'text-primary' : 'text-accent-danger'
   const scoreBg = match.matchScore >= 80 ? 'bg-accent-success/10' : match.matchScore >= 60 ? 'bg-primary/10' : 'bg-accent-danger/10'
@@ -99,36 +113,47 @@ function MatchListRow({ match, idx, onExpress, interestSent, interestLoading }: 
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.35, delay: idx * 0.03 }}
-      className="group bg-background border border-border rounded-xl px-5 py-4 hover:border-primary/30 hover:shadow-[var(--shadow-card)] transition-all duration-200 flex items-center gap-4"
+      className="group bg-background border border-border rounded-xl px-5 py-4 hover:border-primary/30 hover:shadow-[var(--shadow-card)] transition-all duration-200"
     >
-      <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-display font-semibold text-xs shrink-0">
-        {initials}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h3 className="font-body text-sm font-semibold text-text-primary truncate">{match.startupName}</h3>
-          <Badge variant="sector">{match.sector}</Badge>
-          <Badge variant="stage">{match.stage}</Badge>
+      <div className="flex items-center gap-4">
+        <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-display font-semibold text-xs shrink-0">
+          {initials}
         </div>
-        {match.pitch && <p className="font-body text-xs text-text-muted mt-0.5 truncate">{match.pitch}</p>}
-      </div>
-      <span className="font-body text-xs text-text-muted shrink-0">₹{match.fundingSought}L</span>
-      <span className={`${scoreBg} ${scoreColor} font-display text-sm font-semibold px-2.5 py-1 rounded-lg leading-none shrink-0`}>
-        {match.matchScore}%
-      </span>
-      <div className="flex gap-2 shrink-0">
-        <Link to={`/startup/profile/${match.id}`}>
-          <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-text-secondary border border-border hover:bg-surface transition-colors">
-            View
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="font-body text-sm font-semibold text-text-primary truncate">{match.startupName}</h3>
+            <Badge variant="sector">{match.sector}</Badge>
+            <Badge variant="stage">{match.stage}</Badge>
+          </div>
+          {loadingExplanation ? (
+            <div className="flex items-center gap-2 mt-0.5 text-xs text-text-muted">
+              <Icon icon="solar:loading-circle-linear" className="animate-spin text-xs" />
+              <span>Analyzing match...</span>
+            </div>
+          ) : naturalExplanation ? (
+            <p className="font-body text-xs text-text-primary mt-0.5 line-clamp-1">{naturalExplanation}</p>
+          ) : match.pitch ? (
+            <p className="font-body text-xs text-text-muted mt-0.5 truncate">{match.pitch}</p>
+          ) : null}
+        </div>
+        <span className="font-body text-xs text-text-muted shrink-0">₹{match.fundingSought}L</span>
+        <span className={`${scoreBg} ${scoreColor} font-display text-sm font-semibold px-2.5 py-1 rounded-lg leading-none shrink-0`}>
+          {match.matchScore}%
+        </span>
+        <div className="flex gap-2 shrink-0">
+          <Link to={`/startup/profile/${match.id}`}>
+            <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-text-secondary border border-border hover:bg-surface transition-colors">
+              View
+            </button>
+          </Link>
+          <button
+            onClick={onExpress}
+            disabled={interestSent || interestLoading}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-white hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {interestSent ? '✓ Sent' : interestLoading ? '...' : 'Connect'}
           </button>
-        </Link>
-        <button
-          onClick={onExpress}
-          disabled={interestSent || interestLoading}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-white hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {interestSent ? '✓ Sent' : interestLoading ? '...' : 'Connect'}
-        </button>
+        </div>
       </div>
     </motion.div>
   )
@@ -147,11 +172,68 @@ export default function InvestorMatches() {
   const [interestSentIds, setInterestSentIds] = useState<Set<string>>(() => new Set())
   const [interestError, setInterestError] = useState<string | null>(null)
   const filterRef = useRef<HTMLDivElement>(null)
+  const [investorData, setInvestorData] = useState<any>(null)
+  const [naturalExplanations, setNaturalExplanations] = useState<Record<string, string | null>>({})
+  const [loadingExplanations, setLoadingExplanations] = useState<Record<string, boolean>>({})
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
+
+  // Fetch investor data once
+  useEffect(() => {
+    dashboardApi.get()
+      .then((res) => {
+        if (res.data.investor) {
+          setInvestorData(res.data.investor)
+        }
+      })
+      .catch(() => {
+        // Silently fail - explanations will just not show
+      })
+  }, [])
+
+  // Fetch natural language explanations for matches
+  useEffect(() => {
+    if (!investorData || matches.length === 0) return
+
+    const fetchExplanations = async () => {
+      for (const match of matches) {
+        if (naturalExplanations[match.id] !== undefined || loadingExplanations[match.id]) continue
+
+        setLoadingExplanations(prev => ({ ...prev, [match.id]: true }))
+        try {
+          const explanation = await matchScoreApi.explain(
+            {
+              id: match.id,
+              startupName: match.startupName,
+              sector: match.sector,
+              stage: match.stage,
+              fundingSought: match.fundingSought,
+              pitch: match.pitch,
+              description: match.description,
+            },
+            investorData
+          )
+          setNaturalExplanations(prev => ({
+            ...prev,
+            [match.id]: explanation.data.naturalExplanation || null,
+          }))
+        } catch (err) {
+          setNaturalExplanations(prev => ({ ...prev, [match.id]: null }))
+        } finally {
+          setLoadingExplanations(prev => {
+            const next = { ...prev }
+            delete next[match.id]
+            return next
+          })
+        }
+      }
+    }
+
+    fetchExplanations()
+  }, [matches, investorData])
 
   const fetchMatches = (page = 1) => {
     setError(null)
@@ -162,10 +244,14 @@ export default function InvestorMatches() {
     api
       .get('/matches', { params })
       .then((res) => {
-        setMatches(res.data.matches || [])
+        const newMatches = res.data.matches || []
+        setMatches(newMatches)
         setTotalCount(res.data.totalCount ?? 0)
         setTotalPages(res.data.totalPages ?? 1)
         setCurrentPage(res.data.page ?? page)
+        // Clear old explanations when matches change
+        setNaturalExplanations({})
+        setLoadingExplanations({})
       })
       .catch((err) => {
         setMatches([])
@@ -409,6 +495,8 @@ export default function InvestorMatches() {
                       onExpress={() => expressInterest(m.id)}
                       interestSent={interestSentIds.has(m.id)}
                       interestLoading={interestLoadingId === m.id}
+                      naturalExplanation={naturalExplanations[m.id]}
+                      loadingExplanation={loadingExplanations[m.id] || false}
                     />
                   ))}
                 </div>
@@ -422,6 +510,8 @@ export default function InvestorMatches() {
                       onExpress={() => expressInterest(m.id)}
                       interestSent={interestSentIds.has(m.id)}
                       interestLoading={interestLoadingId === m.id}
+                      naturalExplanation={naturalExplanations[m.id]}
+                      loadingExplanation={loadingExplanations[m.id] || false}
                     />
                   ))}
                 </div>

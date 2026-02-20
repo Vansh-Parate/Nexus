@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'motion/react'
-import * as Select from '@radix-ui/react-select'
 import { NeoButton } from '../components/ui/NeoButton'
 import { RocketIllustration } from '../assets/illustrations/RocketIllustration'
 

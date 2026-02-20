@@ -28,7 +28,7 @@ export function useWebSocket(onMessage?: (msg: WSMessage) => void) {
     const { isAuthenticated } = useAuthStore()
     const { addNotification, incrementUnread } = useNotificationStore()
     const wsRef = useRef<WebSocket | null>(null)
-    const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+    const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const onMessageRef = useRef(onMessage)
     onMessageRef.current = onMessage
 
@@ -36,8 +36,10 @@ export function useWebSocket(onMessage?: (msg: WSMessage) => void) {
         if (!isAuthenticated) return
         if (wsRef.current?.readyState === WebSocket.OPEN) return
 
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-        const ws = new WebSocket(`${protocol}//${window.location.hostname}:3001/ws`)
+        // Use environment variable for WebSocket URL, fallback to current host with port 3001
+        const wsUrl = import.meta.env.VITE_WS_URL || 
+            `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}:3001/ws`
+        const ws = new WebSocket(wsUrl)
 
         ws.onopen = () => {
             // console.log('WebSocket connected')
@@ -80,7 +82,9 @@ export function useWebSocket(onMessage?: (msg: WSMessage) => void) {
         connect()
 
         return () => {
-            clearTimeout(reconnectTimeoutRef.current)
+            if (reconnectTimeoutRef.current) {
+                clearTimeout(reconnectTimeoutRef.current)
+            }
             if (wsRef.current) {
                 wsRef.current.close()
                 wsRef.current = null

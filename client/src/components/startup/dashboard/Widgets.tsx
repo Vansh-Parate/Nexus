@@ -2,6 +2,7 @@ import { Icon } from '@iconify/react';
 import { requestsApi, savedApi } from '../../../api/endpoints';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 /* ═══════════════════════════════════════════
    TYPES
@@ -286,7 +287,7 @@ export function RecommendedInvestors({
 
     useEffect(() => {
         savedApi.list().then((r) => {
-            const ids = new Set((r.data.saved || []).map((s: { id: string }) => s.id));
+            const ids = new Set<string>((r.data.saved || []).map((s: { id: string }) => s.id));
             setSavedIds(ids);
         }).catch(() => {});
     }, []);

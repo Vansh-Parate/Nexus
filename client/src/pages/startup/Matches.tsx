@@ -56,7 +56,7 @@ export default function StartupMatches() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
-  const [hasMore, setHasMore] = useState(false)
+  const [, setHasMore] = useState(false)
 
   const fetchMatches = async (page = 1) => {
     try {

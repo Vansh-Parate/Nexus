@@ -42,7 +42,7 @@ export function InvestorDetailPanel({ isOpen, onClose, investor }: InvestorDetai
     const [explanation, setExplanation] = useState<MatchExplanation | null>(null);
     const [loadingExplanation, setLoadingExplanation] = useState(false);
     const { user } = useAuthStore();
-    const [startupData, setStartupData] = useState<any>(null);
+    const [, setStartupData] = useState<any>(null);
 
     useEffect(() => {
         if (isOpen) {
@@ -159,10 +159,16 @@ export function InvestorDetailPanel({ isOpen, onClose, investor }: InvestorDetai
                                 />
                                 <FactorRow 
                                     label="Idea Similarity" 
-                                    value={Math.round((contrib?.idea_similarity?.score || 0) * 100)} 
-                                    color={contrib?.idea_similarity?.score > 0.3 ? 'var(--color-accent-success)' : contrib?.idea_similarity?.score > 0.1 ? 'var(--color-accent-warning)' : 'var(--color-accent-danger)'}
+                                    value={Math.round(((contrib?.idea_similarity?.score ?? 0) * 100))} 
+                                    color={
+                                        (contrib?.idea_similarity?.score ?? 0) > 0.3
+                                            ? 'var(--color-accent-success)'
+                                            : (contrib?.idea_similarity?.score ?? 0) > 0.1
+                                                ? 'var(--color-accent-warning)'
+                                                : 'var(--color-accent-danger)'
+                                    }
                                     contribution={contrib?.idea_similarity?.contribution}
-                                    detail={`${((contrib?.idea_similarity?.score || 0) * 100).toFixed(1)}% semantic match`}
+                                    detail={`${((contrib?.idea_similarity?.score ?? 0) * 100).toFixed(1)}% semantic match`}
                                 />
                             </div>
 

@@ -46,7 +46,9 @@ function setInCache(map, key, value) {
 }
 
 /**
- * Call Python ML model to get match score
+ * Call Python ML model (SHAP-powered explain script) to get match score.
+ * This uses the same feature construction & insights as the explanation endpoint,
+ * but only returns the numeric score for ranking.
  */
 function callMLModel(startup, investor) {
   return new Promise((resolve, reject) => {
@@ -77,7 +79,9 @@ function callMLModel(startup, investor) {
     }
 
     const input = JSON.stringify({ startup: startupPayload, investor: investorPayload })
-    const proc = spawn(PYTHON, [PREDICT_SCRIPT], {
+    // Use the SHAP-based explain script so ranking is powered by the same
+    // insights used for detailed explanations. We only consume the score field.
+    const proc = spawn(PYTHON, [EXPLAIN_SCRIPT], {
       cwd: path.join(__dirname, '..'),
       stdio: ['pipe', 'pipe', 'pipe'],
     })

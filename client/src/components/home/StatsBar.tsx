@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const StatsBar = () => {
     return (
         <section className="bg-[#3e3530] py-12 px-6 lg:px-[5rem]">
