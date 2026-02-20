@@ -21,7 +21,7 @@ export function computeMatchScore(startup, investor) {
 }
 
 /**
- * Rank investors for a startup (by match score desc)
+ * Rank investors for a startup (by match score desc). Includes all investors so newly registered ones are visible.
  */
 export function rankInvestorsForStartup(startup, investors) {
   return investors
@@ -29,12 +29,11 @@ export function rankInvestorsForStartup(startup, investors) {
       ...inv,
       matchScore: computeMatchScore(startup, inv),
     }))
-    .filter((inv) => inv.matchScore > 0)
     .sort((a, b) => b.matchScore - a.matchScore)
 }
 
 /**
- * Rank startups for an investor (by match score desc)
+ * Rank startups for an investor (by match score desc). Includes all so newly registered startups are visible.
  */
 export function rankStartupsForInvestor(investor, startups) {
   return startups
@@ -42,6 +41,5 @@ export function rankStartupsForInvestor(investor, startups) {
       ...s,
       matchScore: computeMatchScore(s, investor),
     }))
-    .filter((s) => s.matchScore > 0)
     .sort((a, b) => b.matchScore - a.matchScore)
 }

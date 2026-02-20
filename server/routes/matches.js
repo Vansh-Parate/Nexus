@@ -22,8 +22,8 @@ router.get('/', authMiddleware, async (req, res) => {
       let investors = await prisma.investor.findMany({
         include: { user: { select: { id: true, name: true } } },
       })
-      if (sector) investors = investors.filter((i) => i.preferredSectors.includes(sector))
-      if (stage) investors = investors.filter((i) => i.preferredStages.includes(stage))
+      if (sector) investors = investors.filter((i) => !i.preferredSectors?.length || i.preferredSectors.includes(sector))
+      if (stage) investors = investors.filter((i) => !i.preferredStages?.length || i.preferredStages.includes(stage))
       if (ticketMin != null) investors = investors.filter((i) => i.ticketMax >= Number(ticketMin))
       if (ticketMax != null) investors = investors.filter((i) => i.ticketMin <= Number(ticketMax))
 
@@ -67,6 +67,7 @@ router.get('/', authMiddleware, async (req, res) => {
         stage: s.stage,
         fundingSought: s.fundingSought,
         pitch: s.pitch,
+        pitchDeckUrl: s.pitchDeckUrl,
         matchScore: s.matchScore,
       }))
       return res.json({ matches })

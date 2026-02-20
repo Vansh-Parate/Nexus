@@ -29,6 +29,7 @@ export async function sendPitchEmail({
   founderName,
   sector,
   pitch,
+  pitchDeckUrl,
   message,
 }) {
   if (!transporter || !to) {
@@ -53,6 +54,12 @@ export async function sendPitchEmail({
   if (pitch) {
     lines.push('Pitch:')
     lines.push(pitch)
+    lines.push('')
+  }
+  if (pitchDeckUrl) {
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+    const fullUrl = pitchDeckUrl.startsWith('http') ? pitchDeckUrl : `${baseUrl}${pitchDeckUrl}`
+    lines.push(`Pitch Deck: ${fullUrl}`)
     lines.push('')
   }
   if (message) {

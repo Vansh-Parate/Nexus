@@ -7,6 +7,7 @@
     "start": "node server.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:add-columns": "node prisma/run-add-columns.js",
     "db:seed": "node prisma/seed.js",
     "ml:build": "python scripts/build_regression_data.py",
     "ml:train": "python scripts/train_model.py",

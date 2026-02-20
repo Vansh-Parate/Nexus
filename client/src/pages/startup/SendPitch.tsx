@@ -5,6 +5,8 @@ import { ArrowLeft, FileText, Video, BarChart3 } from 'lucide-react'
 import { NeoCard } from '../../components/ui/NeoCard'
 import { NeoButton } from '../../components/ui/NeoButton'
 import { Sidebar } from '../../components/layout/Sidebar'
+import { PdfViewerModal } from '../../components/ui/PdfViewerModal'
+import { SuccessIllustration } from '../../assets/illustrations/SuccessIllustration'
 import { api } from '../../api/client'
 
 const MESSAGE_MAX = 500
@@ -37,6 +39,7 @@ export default function SendPitch() {
   const [error, setError] = useState<string | null>(null)
   const [uploadingPdf, setUploadingPdf] = useState(false)
   const [uploadPdfError, setUploadPdfError] = useState<string | null>(null)
+  const [pdfViewUrl, setPdfViewUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (!investorId) return
@@ -190,14 +193,13 @@ export default function SendPitch() {
                     Pitch deck (PDF)
                   </span>
                   {startup?.pitchDeckUrl ? (
-                    <a
-                      href={startup.pitchDeckUrl.startsWith('http') ? startup.pitchDeckUrl : `${window.location.origin}${startup.pitchDeckUrl}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-terracotta underline text-xs"
+                    <button
+                      type="button"
+                      onClick={() => setPdfViewUrl(startup.pitchDeckUrl!)}
+                      className="text-left text-terracotta underline text-xs hover:no-underline"
                     >
                       View pitch deck
-                    </a>
+                    </button>
                   ) : (
                     <label className="cursor-pointer text-xs text-terracotta underline">
                       <input
@@ -281,10 +283,11 @@ export default function SendPitch() {
               <p className="font-body text-sm text-red-500">{error}</p>
             )}
             {sentAt ? (
-              <NeoCard className="p-6 border-terracotta/30 bg-terracotta/5">
-                <p className="font-display font-bold text-terracotta">Pitch sent</p>
+              <NeoCard className="p-8 border-terracotta/30 bg-terracotta/5 text-center">
+                <SuccessIllustration className="mx-auto h-20 w-20 text-terracotta" />
+                <p className="font-display font-bold text-terracotta mt-4">Pitch sent successfully</p>
                 <p className="font-body text-xs text-forest-ink/70 mt-1">
-                  Redirecting to dashboard...
+                  The investor will be notified. Redirecting to dashboard...
                 </p>
               </NeoCard>
             ) : (
@@ -321,6 +324,12 @@ export default function SendPitch() {
           </NeoCard>
         </motion.div>
       </main>
+      {pdfViewUrl && (
+        <PdfViewerModal
+          src={pdfViewUrl}
+          onClose={() => setPdfViewUrl(null)}
+        />
+      )}
     </div>
   )
 }

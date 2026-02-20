@@ -26,7 +26,10 @@ router.get('/', async (req, res) => {
   const received = toId
     ? await prisma.connectionRequest.findMany({
         where: role === 'startup' ? { toStartupId: toId } : { toInvestorId: toId },
-        include: { startupSender: true, investorSender: true },
+        include: {
+          startupSender: { select: { id: true, startupName: true, founderName: true, sector: true, pitch: true, pitchDeckUrl: true } },
+          investorSender: true,
+        },
       })
     : []
 
@@ -105,6 +108,7 @@ router.post('/', async (req, res) => {
     const founderName = startupForEmail?.founderName || startupForEmail?.user?.name
     const sector = startupForEmail?.sector
     const pitch = startupForEmail?.pitch
+    const pitchDeckUrl = startupForEmail?.pitchDeckUrl || null
     const note = created.message || null
 
     sendPitchEmail({
@@ -114,6 +118,7 @@ router.post('/', async (req, res) => {
       founderName,
       sector,
       pitch,
+      pitchDeckUrl,
       message: note,
     }).catch((err) => {
       console.error('Failed to send pitch email', err)
