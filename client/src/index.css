@@ -206,8 +206,12 @@ body {
     to { transform: rotate(360deg); }
 }
 @keyframes orbit-counter-rotate {
-    from { transform: rotate(360deg); }
-    to { transform: rotate(0deg); }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(-360deg); }
+}
+@keyframes orbit-counter-rotate-reverse {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .orbit-track {
@@ -224,11 +228,16 @@ body {
     transform: translate(-50%, -50%);
     z-index: 10;
     pointer-events: none;
+    transform-origin: center center;
 }
 
 .orbit-card {
     animation: orbit-counter-rotate linear infinite;
     pointer-events: auto;
+    transform-origin: center center;
+}
+.orbit-card-reverse {
+    animation: orbit-counter-rotate-reverse linear infinite;
 }
 
 /* Staggered Load */
