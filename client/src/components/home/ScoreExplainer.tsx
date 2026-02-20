@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const ScoreExplainer = () => {
     return (
         <section id="match-engine" className="bg-[#f7f4f0] py-[6.25rem] px-6 lg:px-[5rem] scroll-mt-28">
@@ -42,7 +40,7 @@ export const ScoreExplainer = () => {
                     <h3 className="font-display font-semibold text-[2rem] lg:text-[2.25rem] text-[#3e3530] mb-6 tracking-tight">A score built on 14 weighted signals</h3>
                     <div className="text-[#6b615b] font-light text-[1.0625rem] leading-[1.7] space-y-4 mb-8">
                         <p>Our matchmaking engine doesn't rely on simple keyword matching. It analyzes the deep structural alignment between a startup's current trajectory and an investor's historical and stated preferences.</p>
-                        <p>By processing quantitative data (ticket sizes, runway, valuation expectations) alongside qualitative markers (ESG goals, geographic focus, sector nuances), Nexus computes a holistic compatibility score.</p>
+                        <p>By processing quantitative data (ticket sizes, runway, valuation expectations) alongside qualitative markers (ESG goals, geographic focus, sector nuances), VEGA computes a holistic compatibility score.</p>
                     </div>
 
                     <div className="flex flex-wrap gap-2">

@@ -14,6 +14,7 @@
     "ml:setup": "npm run ml:build && npm run ml:train"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -21,7 +22,8 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "nodemailer": "^8.0.1",
-    "prisma": "^5.22.0"
+    "prisma": "^5.22.0",
+    "ws": "^8.19.0"
   },
   "devDependencies": {
     "@prisma/client": "^5.22.0"

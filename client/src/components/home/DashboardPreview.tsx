@@ -1,4 +1,3 @@
-import React from 'react';
 import { Icon } from '@iconify/react';
 
 export const DashboardPreview = () => {
@@ -16,7 +15,7 @@ export const DashboardPreview = () => {
                         <div className="w-3 h-3 rounded-full bg-[#7a9b76]"></div>
                     </div>
                     <div className="flex-1 max-w-xl mx-auto bg-white border border-[#e8e3dc] rounded-md py-1 px-3 text-center text-[0.75rem] text-[#9b918a]">
-                        <Icon icon="solar:lock-keyhole-linear" className="align-middle mr-1" /> nexus.startupindia.gov.in
+                        <Icon icon="solar:lock-keyhole-linear" className="align-middle mr-1" /> vega.startupindia.gov.in
                     </div>
                 </div>
 

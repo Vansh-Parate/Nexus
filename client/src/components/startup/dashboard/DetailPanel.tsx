@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Icon } from '@iconify/react';
+import { matchScoreApi } from '../../../api/endpoints';
+import { useAuthStore } from '../../../store/authStore';
+import { dashboardApi } from '../../../api/endpoints';
 
 interface InvestorDetailPanelProps {
     isOpen: boolean;
@@ -8,26 +11,85 @@ interface InvestorDetailPanelProps {
         name: string;
         type: string;
         score: number;
+        id?: string;
         firmName?: string;
+        preferredSectors?: string[];
+        preferredStages?: string[];
+        ticketMin?: number;
+        ticketMax?: number;
+        thesis?: string;
     } | null;
+}
+
+interface MatchExplanation {
+    score: number;
+    contributions: {
+        sector: { match: boolean; contribution: number; startup: string; investor: string };
+        stage: { match: boolean; contribution: number; startup: string; investor: string };
+        funding: { fit: boolean; contribution: number; startup_ask: number; investor_range: number[] };
+        idea_similarity: { score: number; contribution: number; description: string };
+    };
+    breakdown: {
+        total_score: number;
+        factors: Array<{ name: string; value: string | boolean; impact: number }>;
+        strengths: string[];
+        weaknesses: string[];
+    };
 }
 
 export function InvestorDetailPanel({ isOpen, onClose, investor }: InvestorDetailPanelProps) {
     const [isVisible, setIsVisible] = useState(false);
+    const [explanation, setExplanation] = useState<MatchExplanation | null>(null);
+    const [loadingExplanation, setLoadingExplanation] = useState(false);
+    const { user } = useAuthStore();
+    const [startupData, setStartupData] = useState<any>(null);
 
     useEffect(() => {
         if (isOpen) {
             setIsVisible(true);
+            // Fetch startup data and match explanation when panel opens
+            if (investor?.id && user?.role === 'startup') {
+                fetchExplanation();
+            }
         } else {
-            const timer = setTimeout(() => setIsVisible(false), 300);
+            const timer = setTimeout(() => {
+                setIsVisible(false);
+                setExplanation(null);
+            }, 300);
             return () => clearTimeout(timer);
         }
-    }, [isOpen]);
+    }, [isOpen, investor?.id]);
+
+    const fetchExplanation = async () => {
+        if (!investor?.id) return;
+        setLoadingExplanation(true);
+        try {
+            // Get startup data from dashboard
+            const dashboardRes = await dashboardApi.get();
+            const startup = dashboardRes.data.startup;
+            setStartupData(startup);
+
+            // Get match explanation
+            const explainRes = await matchScoreApi.explain(startup, {
+                preferredSectors: investor.preferredSectors,
+                preferredStages: investor.preferredStages,
+                ticketMin: investor.ticketMin,
+                ticketMax: investor.ticketMax,
+                thesis: investor.thesis,
+            });
+            setExplanation(explainRes.data);
+        } catch (err) {
+            console.error('Failed to fetch match explanation:', err);
+        } finally {
+            setLoadingExplanation(false);
+        }
+    };
 
     if (!isVisible && !isOpen) return null;
 
-    const score = investor?.score || 0;
+    const score = explanation?.score || investor?.score || 0;
     const scoreColor = score >= 80 ? 'var(--color-accent-success)' : score >= 60 ? 'var(--color-accent-warning)' : 'var(--color-accent-danger)';
+    const contrib = explanation?.contributions;
 
     return (
         <>
@@ -63,17 +125,86 @@ export function InvestorDetailPanel({ isOpen, onClose, investor }: InvestorDetai
                         </div>
                     </div>
 
-                    <h3 className="text-xs uppercase tracking-widest text-[#9b918a] font-semibold mb-6">Factor Breakdown</h3>
+                    <h3 className="text-xs uppercase tracking-widest text-[#9b918a] font-semibold mb-6">
+                        {loadingExplanation ? 'Analyzing Match...' : 'AI Match Breakdown'}
+                    </h3>
 
-                    <div className="flex flex-col gap-5 mb-10">
-                        {/* Rows */}
-                        <FactorRow label="Sector Fit" value={100} color="var(--color-accent-success)" />
-                        <FactorRow label="Stage Fit" value={80} color="var(--color-accent-success)" />
-                        <FactorRow label="Ticket Compatibility" value={60} color="var(--color-accent-warning)" />
-                        <FactorRow label="Geography" value={100} color="var(--color-accent-success)" />
-                        <FactorRow label="Traction vs Risk" value={40} color="var(--color-accent-danger)" />
-                        <FactorRow label="ESG / Policy" value={90} color="var(--color-accent-success)" />
-                    </div>
+                    {loadingExplanation ? (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="w-10 h-10 rounded-full border-2 border-[#d4a574] border-t-transparent animate-spin"></div>
+                        </div>
+                    ) : explanation ? (
+                        <>
+                            <div className="flex flex-col gap-5 mb-6">
+                                <FactorRow 
+                                    label="Sector Match" 
+                                    value={contrib?.sector?.match ? 100 : 0} 
+                                    color={contrib?.sector?.match ? 'var(--color-accent-success)' : 'var(--color-accent-danger)'}
+                                    contribution={contrib?.sector?.contribution}
+                                    detail={`${contrib?.sector?.startup} ↔ ${contrib?.sector?.investor}`}
+                                />
+                                <FactorRow 
+                                    label="Stage Match" 
+                                    value={contrib?.stage?.match ? 100 : 0} 
+                                    color={contrib?.stage?.match ? 'var(--color-accent-success)' : 'var(--color-accent-danger)'}
+                                    contribution={contrib?.stage?.contribution}
+                                    detail={`${contrib?.stage?.startup} ↔ ${contrib?.stage?.investor}`}
+                                />
+                                <FactorRow 
+                                    label="Funding Fit" 
+                                    value={contrib?.funding?.fit ? 100 : 0} 
+                                    color={contrib?.funding?.fit ? 'var(--color-accent-success)' : 'var(--color-accent-warning)'}
+                                    contribution={contrib?.funding?.contribution}
+                                    detail={`₹${contrib?.funding?.startup_ask}L in [₹${contrib?.funding?.investor_range?.[0]}L - ₹${contrib?.funding?.investor_range?.[1]}L]`}
+                                />
+                                <FactorRow 
+                                    label="Idea Similarity" 
+                                    value={Math.round((contrib?.idea_similarity?.score || 0) * 100)} 
+                                    color={contrib?.idea_similarity?.score > 0.3 ? 'var(--color-accent-success)' : contrib?.idea_similarity?.score > 0.1 ? 'var(--color-accent-warning)' : 'var(--color-accent-danger)'}
+                                    contribution={contrib?.idea_similarity?.contribution}
+                                    detail={`${((contrib?.idea_similarity?.score || 0) * 100).toFixed(1)}% semantic match`}
+                                />
+                            </div>
+
+                            {explanation.breakdown && (
+                                <div className="bg-[#f7f4f0] rounded-xl p-5 mb-6 border border-[#e8e3dc]">
+                                    <h4 className="text-xs uppercase tracking-wider text-[#9b918a] font-semibold mb-3">Match Insights</h4>
+                                    {explanation.breakdown.strengths.length > 0 && (
+                                        <div className="mb-3">
+                                            <p className="text-xs text-[#6b615b] mb-2 font-medium">Strengths:</p>
+                                            <ul className="space-y-1">
+                                                {explanation.breakdown.strengths.map((s, i) => (
+                                                    <li key={i} className="text-xs text-[#7a9b76] flex items-center gap-1.5">
+                                                        <Icon icon="solar:check-circle-linear" className="text-sm" />
+                                                        {s}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {explanation.breakdown.weaknesses.length > 0 && (
+                                        <div>
+                                            <p className="text-xs text-[#6b615b] mb-2 font-medium">Areas to Address:</p>
+                                            <ul className="space-y-1">
+                                                {explanation.breakdown.weaknesses.map((w, i) => (
+                                                    <li key={i} className="text-xs text-[#c77567] flex items-center gap-1.5">
+                                                        <Icon icon="solar:info-circle-linear" className="text-sm" />
+                                                        {w}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="flex flex-col gap-5 mb-10">
+                            <FactorRow label="Sector Fit" value={100} color="var(--color-accent-success)" />
+                            <FactorRow label="Stage Fit" value={80} color="var(--color-accent-success)" />
+                            <FactorRow label="Ticket Compatibility" value={60} color="var(--color-accent-warning)" />
+                        </div>
+                    )}
 
                     {/* Radar Chart Placeholder - Can implement proper chart if needed, using SVG for now to match exactly */}
                     <div className="flex justify-center items-center py-4 relative">
@@ -122,15 +253,35 @@ export function InvestorDetailPanel({ isOpen, onClose, investor }: InvestorDetai
     );
 }
 
-function FactorRow({ label, value, color }: { label: string, value: number, color: string }) {
+function FactorRow({ 
+    label, 
+    value, 
+    color, 
+    contribution, 
+    detail 
+}: { 
+    label: string
+    value: number
+    color: string
+    contribution?: number
+    detail?: string
+}) {
     return (
         <div>
             <div className="flex justify-between items-end mb-1.5">
-                <span className="text-xs text-[#6b615b]">{label}</span>
-                <span className="text-sm font-semibold text-[#3e3530]">{value}%</span>
+                <div className="flex-1">
+                    <span className="text-xs text-[#6b615b]">{label}</span>
+                    {detail && <p className="text-[0.65rem] text-[#9b918a] mt-0.5">{detail}</p>}
+                </div>
+                <div className="text-right">
+                    <span className="text-sm font-semibold text-[#3e3530]">{value}%</span>
+                    {contribution !== undefined && (
+                        <span className="text-[0.65rem] text-[#9b918a] block mt-0.5">+{contribution.toFixed(1)} pts</span>
+                    )}
+                </div>
             </div>
             <div className="w-full h-1 bg-[#e8e3dc] rounded-full overflow-hidden">
-                <div className="h-full rounded-full" style={{ width: `${value}%`, backgroundColor: color }}></div>
+                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${value}%`, backgroundColor: color }}></div>
             </div>
         </div>
     );

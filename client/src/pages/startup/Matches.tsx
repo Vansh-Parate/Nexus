@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { motion } from 'motion/react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { motion, AnimatePresence } from 'motion/react'
+import { Icon } from '@iconify/react'
 import { NeoCard } from '../../components/ui/NeoCard'
 import { NeoButton } from '../../components/ui/NeoButton'
 import { Badge } from '../../components/ui/Badge'
@@ -8,6 +9,7 @@ import { Sidebar } from '../../components/layout/Sidebar'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { CompassIllustration } from '../../assets/illustrations/CompassIllustration'
 import { api, isNetworkError } from '../../api/client'
+import { matchScoreApi, dashboardApi, savedApi } from '../../api/endpoints'
 
 interface Match {
   id: string
@@ -18,7 +20,24 @@ interface Match {
   ticketMin: number
   ticketMax: number
   matchScore: number
+  scoreSource?: string
 }
+
+interface MatchInsights {
+  score: number
+  contributions: {
+    sector: { match: boolean; contribution: number; startup: string; investor: string }
+    stage: { match: boolean; contribution: number; startup: string; investor: string }
+    funding: { fit: boolean; contribution: number; startup_ask: number; investor_range: number[] }
+    idea_similarity: { score: number; contribution: number; description: string }
+  }
+  breakdown: {
+    strengths: string[]
+    weaknesses: string[]
+  }
+}
+
+const PAGE_SIZE = 9
 
 export default function StartupMatches() {
   const [matches, setMatches] = useState<Match[]>([])
@@ -27,30 +46,68 @@ export default function StartupMatches() {
   const [sector, setSector] = useState('')
   const [stage, setStage] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [startupData, setStartupData] = useState<any>(null)
+  const [insightsMap, setInsightsMap] = useState<Record<string, MatchInsights>>({})
+  const [loadingInsights, setLoadingInsights] = useState<Record<string, boolean>>({})
+  const [expandedCard, setExpandedCard] = useState<string | null>(null)
+  const [searchParams] = useSearchParams()
 
-  const fetchMatches = async () => {
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+
+  const fetchMatches = async (page = 1) => {
     try {
       setError(null)
       setLoading(true)
 
-      const params: Record<string, string> = {}
-      if (sector) params.sector = sector
-      if (stage) params.stage = stage
+      const viewingSaved = searchParams.get('saved') === '1'
 
-      const res = await api.get('/matches', { params })
+      let formatted: Match[] = []
 
-      const formatted: Match[] = (res.data.matches || []).map(
-        (m: any) => ({
-          id: m.id || m._id,
-          name: m.fullName ?? m.name ?? 'Unknown Investor',
+      if (viewingSaved) {
+        const res = await savedApi.list()
+        formatted = (res.data.saved || []).map((m: any) => ({
+          id: m.id,
+          name: m.name ?? 'Unknown Investor',
           firmName: m.firmName ?? undefined,
           preferredSectors: m.preferredSectors || [],
           preferredStages: m.preferredStages || [],
           ticketMin: m.ticketMin ?? 0,
           ticketMax: m.ticketMax ?? 0,
-          matchScore: m.matchScore ?? 0,
-        })
-      )
+          matchScore: 0,
+        }))
+        setTotalCount(formatted.length)
+        setTotalPages(1)
+        setHasMore(false)
+        setCurrentPage(1)
+      } else {
+        const params: Record<string, string> = { page: String(page), pageSize: String(PAGE_SIZE) }
+        if (sector) params.sector = sector
+        if (stage) params.stage = stage
+
+        const res = await api.get('/matches', { params })
+
+        formatted = (res.data.matches || []).map(
+          (m: any) => ({
+            id: m.id || m._id,
+            name: m.fullName ?? m.name ?? 'Unknown Investor',
+            firmName: m.firmName ?? undefined,
+            preferredSectors: m.preferredSectors || [],
+            preferredStages: m.preferredStages || [],
+            ticketMin: m.ticketMin ?? 0,
+            ticketMax: m.ticketMax ?? 0,
+            matchScore: m.matchScore ?? 0,
+          })
+        )
+
+        setTotalCount(res.data.totalCount ?? formatted.length)
+        setTotalPages(res.data.totalPages ?? 1)
+        setHasMore(res.data.hasMore ?? false)
+        setCurrentPage(res.data.page ?? page)
+      }
 
       setMatches(formatted)
     } catch (err) {
@@ -67,14 +124,73 @@ export default function StartupMatches() {
   }
 
   useEffect(() => {
-    fetchMatches()
-  }, [sector, stage])
+    setCurrentPage(1)
+    fetchMatches(1)
+  }, [sector, stage, searchParams])
+
+  // Fetch startup data once
+  useEffect(() => {
+    dashboardApi.get()
+      .then((res) => setStartupData(res.data.startup))
+      .catch((err) => console.error('Failed to fetch startup data:', err))
+  }, [])
+
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    fetchMatches(page)
+  }
+
+  const fetchInsights = async (match: Match) => {
+    if (insightsMap[match.id] || loadingInsights[match.id] || !startupData) return
+
+    setLoadingInsights(prev => ({ ...prev, [match.id]: true }))
+    try {
+      const explainRes = await matchScoreApi.explain(startupData, {
+        preferredSectors: match.preferredSectors,
+        preferredStages: match.preferredStages,
+        ticketMin: match.ticketMin,
+        ticketMax: match.ticketMax,
+      })
+      setInsightsMap(prev => ({ ...prev, [match.id]: explainRes.data }))
+    } catch (err) {
+      console.error('Failed to fetch insights for match:', err)
+    } finally {
+      setLoadingInsights(prev => ({ ...prev, [match.id]: false }))
+    }
+  }
+
+  const toggleInsights = (matchId: string, match: Match) => {
+    if (expandedCard === matchId) {
+      setExpandedCard(null)
+    } else {
+      setExpandedCard(matchId)
+      fetchInsights(match)
+    }
+  }
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages: (number | '...')[] = []
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+    } else {
+      pages.push(1)
+      if (currentPage > 3) pages.push('...')
+      const start = Math.max(2, currentPage - 1)
+      const end = Math.min(totalPages - 1, currentPage + 1)
+      for (let i = start; i <= end; i++) pages.push(i)
+      if (currentPage < totalPages - 2) pages.push('...')
+      pages.push(totalPages)
+    }
+    return pages
+  }
 
   return (
     <div className="min-h-screen flex bg-chalk-white">
       <Sidebar />
 
-      <main className="flex-1 pl-[240px] flex">
+      <main className="flex-1 pl-[240px] md:pl-0 md:ml-[4.5rem] flex">
         {/* ================= MATCHES SECTION ================= */}
         <div className="flex-1 p-10 overflow-auto">
           <motion.div
@@ -82,7 +198,18 @@ export default function StartupMatches() {
             animate={{ opacity: 1 }}
             className="max-w-6xl"
           >
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-forest-ink/60 font-medium">AI-Powered Ranking</span>
+                <span className="text-[10px] bg-terracotta/10 text-terracotta px-2 py-0.5 rounded-full font-semibold">
+                  ML Sorted
+                </span>
+                {totalCount > 0 && !loading && (
+                  <span className="text-[10px] text-forest-ink/40 font-medium ml-1">
+                    {totalCount} matches
+                  </span>
+                )}
+              </div>
               <div className="relative">
                 <NeoButton
                   variant="outline"
@@ -139,15 +266,15 @@ export default function StartupMatches() {
               </div>
             </div>
             {loading ? (
-              <div className="text-center py-20">
-                <p className="text-sm text-forest-ink/60">
-                  Finding best investor matches...
-                </p>
+              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+                {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                  <div key={i} className="bg-surface rounded-2xl border border-transparent animate-pulse h-64 p-6" />
+                ))}
               </div>
             ) : error ? (
               <NeoCard className="p-12 text-center">
                 <p className="font-body text-forest-ink/80">{error}</p>
-                <NeoButton variant="primary" className="mt-4" onClick={fetchMatches}>
+                <NeoButton variant="primary" className="mt-4" onClick={() => fetchMatches(currentPage)}>
                   Retry
                 </NeoButton>
               </NeoCard>
@@ -157,85 +284,292 @@ export default function StartupMatches() {
                 message="No matches yet — try broadening your filters"
               />
             ) : (
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
-                {matches.map((m) => (
-                  <motion.div
-                    key={m.id}
-                    whileHover={{ y: -5 }}
-                    transition={{ type: 'spring', stiffness: 200 }}
-                  >
-                    <NeoCard className="p-6 flex flex-col h-full hover:shadow-lg transition-all duration-300">
-                      {/* ===== Header ===== */}
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-lg font-bold text-forest-ink">
-                            {m.name}
-                          </h3>
-                          <p className="text-xs text-forest-ink/60">
-                            {m.firmName || 'Independent Investor'}
-                          </p>
+              <>
+                <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+                  {matches.map((m) => (
+                    <motion.div
+                      key={m.id}
+                      whileHover={{ y: -5 }}
+                      transition={{ type: 'spring', stiffness: 200 }}
+                    >
+                      <NeoCard className="p-6 flex flex-col h-full hover:shadow-lg transition-all duration-300">
+                        {/* ===== Header ===== */}
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-lg font-bold text-forest-ink">
+                              {m.name}
+                            </h3>
+                            <p className="text-xs text-forest-ink/60">
+                              {m.firmName || 'Independent Investor'}
+                            </p>
+                            {m.scoreSource && (
+                              <span className="text-[10px] text-forest-ink/50 mt-0.5 inline-block">
+                                {m.scoreSource === 'ml' ? '🤖 ML Score' : '📊 Rule-based'}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="text-right">
+                            <span className={`text-sm font-bold ${m.matchScore === 0 ? 'text-forest-ink/40' : 'text-terracotta'}`}>
+                              {m.matchScore}%
+                            </span>
+                            {m.matchScore === 0 && (
+                              <p className="text-[10px] text-forest-ink/50 mt-0.5">Calculating...</p>
+                            )}
+                          </div>
                         </div>
 
-                        <span className="text-sm font-bold text-terracotta">
-                          {m.matchScore}%
-                        </span>
-                      </div>
+                        {/* ===== Match Progress Bar ===== */}
+                        <div className="w-full h-2 bg-border rounded-full overflow-hidden mb-4">
+                          <div
+                            className={`h-full transition-all duration-500 ${m.matchScore >= 80 ? 'bg-green-600' :
+                                m.matchScore >= 60 ? 'bg-terracotta' :
+                                  m.matchScore > 0 ? 'bg-yellow-500' : 'bg-forest-ink/30'
+                              }`}
+                            style={{ width: `${Math.max(m.matchScore, 5)}%` }}
+                          />
+                          {m.matchScore === 0 && (
+                            <div className="text-[10px] text-forest-ink/50 mt-1 text-center">
+                              Score being calculated - click "Show AI Insights" for details
+                            </div>
+                          )}
+                        </div>
 
-                      {/* ===== Match Progress Bar ===== */}
-                      <div className="w-full h-2 bg-border rounded-full overflow-hidden mb-4">
-                        <div
-                          className="h-full bg-terracotta transition-all duration-500"
-                          style={{ width: `${m.matchScore}%` }}
-                        />
-                      </div>
+                        {/* ===== Sectors ===== */}
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {m.preferredSectors.slice(0, 3).map((s, i) => (
+                            <Badge key={`${m.id}-sector-${i}`} variant="stage">
+                              {s}
+                            </Badge>
+                          ))}
+                        </div>
 
-                      {/* ===== Sectors ===== */}
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {m.preferredSectors.slice(0, 3).map((s, i) => (
-                          <Badge key={`${m.id}-sector-${i}`} variant="stage">
-                            {s}
-                          </Badge>
-                        ))}
-                      </div>
+                        {/* ===== Stages ===== */}
+                        <div className="flex flex-wrap gap-1 mb-4">
+                          {m.preferredStages.slice(0, 2).map((st, i) => (
+                            <Badge key={`${m.id}-stage-${i}`} variant="stage">
+                              {st}
+                            </Badge>
+                          ))}
+                        </div>
 
-                      {/* ===== Stages ===== */}
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {m.preferredStages.slice(0, 2).map((st, i) => (
-                          <Badge key={`${m.id}-stage-${i}`} variant="stage">
-                            {st}
-                          </Badge>
-                        ))}
-                      </div>
+                        {/* ===== Ticket Range ===== */}
+                        <p className="text-sm font-medium text-forest-ink mb-4">
+                          Investment Range: ₹{m.ticketMin}L – ₹{m.ticketMax}L
+                        </p>
 
-                      {/* ===== Ticket Range ===== */}
-                      <p className="text-sm font-medium text-forest-ink mb-6">
-                        Investment Range: ₹{m.ticketMin}L – ₹{m.ticketMax}L
-                      </p>
+                        {/* ===== Model Insights Toggle ===== */}
+                        <button
+                          onClick={() => toggleInsights(m.id, m)}
+                          className="w-full mb-4 text-xs text-terracotta hover:text-terracotta/80 font-medium flex items-center justify-between py-2 px-3 bg-terracotta/5 rounded-lg hover:bg-terracotta/10 transition-colors"
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Icon icon="solar:chart-2-linear" className="text-sm" />
+                            {expandedCard === m.id ? 'Hide' : 'Show'} AI Insights
+                          </span>
+                          <Icon
+                            icon={expandedCard === m.id ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'}
+                            className="text-sm"
+                          />
+                        </button>
 
-                      {/* ===== Actions ===== */}
-                      <div className="mt-auto space-y-2">
-                        <Link to={`/investor/profile/${m.id}`}>
-                          <NeoButton
-                            variant="outline"
-                            className="w-full text-sm"
+                        {/* ===== Model Insights Panel ===== */}
+                        <AnimatePresence>
+                          {expandedCard === m.id && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.25 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="mb-4 p-4 bg-forest-ink/5 rounded-lg border border-border">
+                                {loadingInsights[m.id] ? (
+                                  <div className="flex items-center justify-center py-4">
+                                    <div className="w-5 h-5 border-2 border-terracotta border-t-transparent rounded-full animate-spin"></div>
+                                    <span className="ml-2 text-xs text-forest-ink/60">Analyzing match...</span>
+                                  </div>
+                                ) : insightsMap[m.id] ? (
+                                  <div className="space-y-3">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <span className="text-xs font-semibold text-forest-ink">Match Breakdown</span>
+                                      <span className="text-xs text-forest-ink/60">Score: {insightsMap[m.id].score}%</span>
+                                    </div>
+
+                                    {/* Factor Contributions */}
+                                    <div className="space-y-2">
+                                      {insightsMap[m.id].contributions.sector && (
+                                        <div className="flex items-center justify-between text-xs">
+                                          <span className="text-forest-ink/70">Sector Match</span>
+                                          <div className="flex items-center gap-2">
+                                            <span className={`text-xs ${insightsMap[m.id].contributions.sector.match ? 'text-green-600' : 'text-red-600'}`}>
+                                              {insightsMap[m.id].contributions.sector.match ? '✓' : '✗'}
+                                            </span>
+                                            <span className="text-forest-ink/60">+{insightsMap[m.id].contributions.sector.contribution.toFixed(1)} pts</span>
+                                          </div>
+                                        </div>
+                                      )}
+                                      {insightsMap[m.id].contributions.stage && (
+                                        <div className="flex items-center justify-between text-xs">
+                                          <span className="text-forest-ink/70">Stage Match</span>
+                                          <div className="flex items-center gap-2">
+                                            <span className={`text-xs ${insightsMap[m.id].contributions.stage.match ? 'text-green-600' : 'text-red-600'}`}>
+                                              {insightsMap[m.id].contributions.stage.match ? '✓' : '✗'}
+                                            </span>
+                                            <span className="text-forest-ink/60">+{insightsMap[m.id].contributions.stage.contribution.toFixed(1)} pts</span>
+                                          </div>
+                                        </div>
+                                      )}
+                                      {insightsMap[m.id].contributions.funding && (
+                                        <div className="flex items-center justify-between text-xs">
+                                          <span className="text-forest-ink/70">Funding Fit</span>
+                                          <div className="flex items-center gap-2">
+                                            <span className={`text-xs ${insightsMap[m.id].contributions.funding.fit ? 'text-green-600' : 'text-yellow-600'}`}>
+                                              {insightsMap[m.id].contributions.funding.fit ? '✓' : '~'}
+                                            </span>
+                                            <span className="text-forest-ink/60">+{insightsMap[m.id].contributions.funding.contribution.toFixed(1)} pts</span>
+                                          </div>
+                                        </div>
+                                      )}
+                                      {insightsMap[m.id].contributions.idea_similarity && (
+                                        <div className="flex items-center justify-between text-xs">
+                                          <span className="text-forest-ink/70">Idea Similarity</span>
+                                          <span className="text-forest-ink/60">
+                                            {(insightsMap[m.id].contributions.idea_similarity.score * 100).toFixed(0)}% (+{insightsMap[m.id].contributions.idea_similarity.contribution.toFixed(1)} pts)
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Strengths & Weaknesses */}
+                                    {(insightsMap[m.id].breakdown.strengths.length > 0 || insightsMap[m.id].breakdown.weaknesses.length > 0) && (
+                                      <div className="pt-2 border-t border-border space-y-2">
+                                        {insightsMap[m.id].breakdown.strengths.length > 0 && (
+                                          <div>
+                                            <p className="text-xs font-semibold text-green-700 mb-1">Strengths:</p>
+                                            <ul className="space-y-0.5">
+                                              {insightsMap[m.id].breakdown.strengths.map((s, i) => (
+                                                <li key={i} className="text-xs text-forest-ink/70 flex items-center gap-1">
+                                                  <Icon icon="solar:check-circle-linear" className="text-green-600 text-xs" />
+                                                  {s}
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+                                        {insightsMap[m.id].breakdown.weaknesses.length > 0 && (
+                                          <div>
+                                            <p className="text-xs font-semibold text-red-700 mb-1">Areas to Address:</p>
+                                            <ul className="space-y-0.5">
+                                              {insightsMap[m.id].breakdown.weaknesses.map((w, i) => (
+                                                <li key={i} className="text-xs text-forest-ink/70 flex items-center gap-1">
+                                                  <Icon icon="solar:info-circle-linear" className="text-red-600 text-xs" />
+                                                  {w}
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <p className="text-xs text-forest-ink/60 text-center py-2">Unable to load insights</p>
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {/* ===== Actions ===== */}
+                        <div className="mt-auto space-y-2">
+                          <Link to={`/investor/profile/${m.id}`}>
+                            <NeoButton
+                              variant="outline"
+                              className="w-full text-sm"
+                            >
+                              View Profile
+                            </NeoButton>
+                          </Link>
+
+                          <Link to={`/startup/pitch/send/${m.id}`}>
+                            <NeoButton
+                              variant="primary"
+                              className="w-full text-sm"
+                            >
+                              Send Pitch Request →
+                            </NeoButton>
+                          </Link>
+                        </div>
+                      </NeoCard>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* ===== PAGINATION ===== */}
+                {totalPages > 1 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="flex items-center justify-center gap-2 mt-10"
+                  >
+                    {/* Previous */}
+                    <button
+                      onClick={() => goToPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium border border-border bg-chalk-white text-forest-ink hover:bg-surface disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <Icon icon="solar:alt-arrow-left-linear" className="text-sm" />
+                      Prev
+                    </button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center gap-1">
+                      {getPageNumbers().map((page, idx) =>
+                        page === '...' ? (
+                          <span key={`dots-${idx}`} className="w-8 h-8 flex items-center justify-center text-xs text-forest-ink/40">
+                            ⋯
+                          </span>
+                        ) : (
+                          <button
+                            key={page}
+                            onClick={() => goToPage(page)}
+                            className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all duration-200 ${currentPage === page
+                                ? 'bg-terracotta text-white shadow-md'
+                                : 'text-forest-ink/70 hover:bg-surface border border-transparent hover:border-border'
+                              }`}
                           >
-                            View Profile
-                          </NeoButton>
-                        </Link>
+                            {page}
+                          </button>
+                        )
+                      )}
+                    </div>
 
-                        <Link to={`/startup/pitch/send/${m.id}`}>
-                          <NeoButton
-                            variant="primary"
-                            className="w-full text-sm"
-                          >
-                            Send Pitch Request →
-                          </NeoButton>
-                        </Link>
-                      </div>
-                    </NeoCard>
+                    {/* Next */}
+                    <button
+                      onClick={() => goToPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium border border-border bg-chalk-white text-forest-ink hover:bg-surface disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Next
+                      <Icon icon="solar:alt-arrow-right-linear" className="text-sm" />
+                    </button>
                   </motion.div>
-                ))}
-              </div>
+                )}
+
+                {/* Results Info */}
+                {totalCount > 0 && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="text-[11px] text-forest-ink/40 text-center mt-3"
+                  >
+                    Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, totalCount)} of {totalCount} matches
+                  </motion.p>
+                )}
+              </>
             )}
           </motion.div>
         </div>

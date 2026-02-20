@@ -1,4 +1,3 @@
-import React from 'react';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
 
@@ -54,7 +53,7 @@ export const DualRole = () => {
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-5 h-5 bg-[#d4a574] rounded-full flex items-center justify-center text-white text-[0.5rem]">V</div>
-                        <span className="text-[0.875rem] font-medium">Nexus Ventures</span>
+                        <span className="text-[0.875rem] font-medium">VEGA Capital</span>
                     </div>
                 </div>
                 <div className="w-12 h-12 rounded-full border-4 border-[#d4a574] flex items-center justify-center bg-[#fffbf8]">

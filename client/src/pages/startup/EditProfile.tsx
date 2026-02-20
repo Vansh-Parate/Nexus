@@ -6,6 +6,8 @@ import { Sidebar } from '../../components/layout/Sidebar'
 import { ProfileProgressBar } from '../../components/ui/ProfileProgressBar'
 import { StartupProfileView } from '../../components/startup/StartupProfileView'
 import { api } from '../../api/client'
+import { pitchApi } from '../../api/endpoints'
+import toast from 'react-hot-toast'
 
 const SECTORS = ['AgriTech', 'FinTech', 'EdTech', 'CleanEnergy', 'HealthTech', 'D2C', 'DeepTech', 'GovTech', 'SaaS', 'Mobility']
 const STAGES = ['Idea', 'MVP', 'Early Revenue', 'Scaling']
@@ -45,6 +47,7 @@ export default function StartupEditProfile() {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set())
   const [submitted, setSubmitted] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [generatingPitch, setGeneratingPitch] = useState(false)
 
   useEffect(() => {
     api
@@ -339,6 +342,32 @@ export default function StartupEditProfile() {
                 >
                   <h2 className="font-display text-2xl font-bold text-forest-ink">Business Details</h2>
                   <hr className="border-t border-dashed border-border" />
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-forest-ink/60 flex-1">AI can draft pitch & description from your profile</span>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setGeneratingPitch(true)
+                        try {
+                          const res = await pitchApi.generate('both')
+                          const { pitch: p, description: d } = res.data
+                          setProfile((prev) =>
+                            prev ? { ...prev, pitch: p || prev.pitch, description: d || prev.description } : null
+                          )
+                          if (p || d) toast.success('AI draft generated')
+                          else toast.error('Could not generate. Add GEMINI_API_KEY to server .env')
+                        } catch (err) {
+                          toast.error('Failed to generate. Check server logs.')
+                        } finally {
+                          setGeneratingPitch(false)
+                        }
+                      }}
+                      disabled={generatingPitch}
+                      className="px-3 py-1.5 text-xs font-medium rounded-lg border border-terracotta text-terracotta hover:bg-terracotta/10 disabled:opacity-50"
+                    >
+                      {generatingPitch ? 'Generating…' : '✨ Generate with AI'}
+                    </button>
+                  </div>
                   <div>
                     <label className="font-body text-sm text-forest-ink/80 block mb-1">One-liner Pitch</label>
                     <textarea
