@@ -7,18 +7,49 @@ import { Badge } from '../../components/ui/Badge'
 import { MatchScoreRing } from '../../components/ui/MatchScoreRing'
 import { PdfViewerModal } from '../../components/ui/PdfViewerModal'
 import { api } from '../../api/client'
+import { useAuthStore } from '../../store/authStore'
+
+// Match score calculation (same as backend)
+function computeMatchScore(startup: any, investor: any): number {
+  let score = 0
+  const sectorMatch = investor?.preferredSectors?.includes(startup?.sector)
+  if (sectorMatch) score += 40
+  const stageMatch = investor?.preferredStages?.includes(startup?.stage)
+  if (stageMatch) score += 30
+  const sought = startup?.fundingSought || 0
+  const min = investor?.ticketMin || 0
+  const max = investor?.ticketMax || 1000
+  if (sought >= min && sought <= max) score += 30
+  else if (sought >= min * 0.7 && sought <= max * 1.3) score += 15
+  return score
+}
 
 export default function StartupProfile() {
   const { id } = useParams()
+  const { user } = useAuthStore()
   const [startup, setStartup] = useState<Record<string, unknown> | null>(null)
   const [pdfViewUrl, setPdfViewUrl] = useState<string | null>(null)
   const [sendingInterest, setSendingInterest] = useState(false)
   const [interestSent, setInterestSent] = useState(false)
   const [interestError, setInterestError] = useState<string | null>(null)
+  const [matchScore, setMatchScore] = useState<number | null>(null)
 
   useEffect(() => {
-    if (id) api.get(`/startups/${id}`).then((r) => setStartup(r.data)).catch(() => setStartup(null))
-  }, [id])
+    if (id) {
+      api.get(`/startups/${id}`).then((r) => {
+        setStartup(r.data)
+        // If user is investor, fetch their profile to calculate match score
+        if (user?.role === 'investor') {
+          api.get('/investors/me')
+            .then((invRes) => {
+              const score = computeMatchScore(r.data, invRes.data)
+              setMatchScore(score)
+            })
+            .catch(() => setMatchScore(null))
+        }
+      }).catch(() => setStartup(null))
+    }
+  }, [id, user?.role])
 
   if (!startup) return <div className="min-h-screen flex items-center justify-center font-body">Loading...</div>
 
@@ -28,6 +59,10 @@ export default function StartupProfile() {
   const traction = startup.traction as any
   const documents = startup.documents as any
   const foundedAt = startup.foundedAt ? new Date(String(startup.foundedAt)) : null
+  const createdAt = startup.createdAt ? new Date(String(startup.createdAt)) : null
+  const updatedAt = startup.updatedAt ? new Date(String(startup.updatedAt)) : null
+  const profileCompletedAt = startup.profileCompletedAt ? new Date(String(startup.profileCompletedAt)) : null
+  const userData = (startup.user as any) || {}
 
   const sendInterest = async () => {
     if (!id || sendingInterest || interestSent) return
@@ -127,10 +162,80 @@ export default function StartupProfile() {
                 </div>
               )}
             </NeoCard>
+
+            <NeoCard className="p-6 mb-6">
+              <h2 className="font-display text-xl font-bold text-forest-ink mb-2">Company Details</h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="font-body text-xs text-forest-ink/60 mb-1">Sector</p>
+                  <p className="font-body font-semibold text-forest-ink">{String(startup.sector || '—')}</p>
+                </div>
+                <div>
+                  <p className="font-body text-xs text-forest-ink/60 mb-1">Stage</p>
+                  <p className="font-body font-semibold text-forest-ink">{String(startup.stage || '—')}</p>
+                </div>
+                <div>
+                  <p className="font-body text-xs text-forest-ink/60 mb-1">Location</p>
+                  <p className="font-body font-semibold text-forest-ink">{String(startup.location || '—')}</p>
+                </div>
+                <div>
+                  <p className="font-body text-xs text-forest-ink/60 mb-1">Funding Sought</p>
+                  <p className="font-body font-semibold text-forest-ink">₹{Number(startup.fundingSought || 0)}L</p>
+                </div>
+                {foundedAt && (
+                  <div>
+                    <p className="font-body text-xs text-forest-ink/60 mb-1">Founded</p>
+                    <p className="font-body font-semibold text-forest-ink">{foundedAt.toLocaleDateString()}</p>
+                  </div>
+                )}
+                {profileCompletedAt && (
+                  <div>
+                    <p className="font-body text-xs text-forest-ink/60 mb-1">Profile Completed</p>
+                    <p className="font-body font-semibold text-forest-ink">{profileCompletedAt.toLocaleDateString()}</p>
+                  </div>
+                )}
+              </div>
+            </NeoCard>
+
+            {userData.name && (
+              <NeoCard className="p-6 mb-6">
+                <h2 className="font-display text-xl font-bold text-forest-ink mb-2">Contact</h2>
+                <p className="font-body text-sm text-forest-ink/80">
+                  <span className="text-forest-ink/60">User: </span>
+                  {String(userData.name || '—')}
+                </p>
+              </NeoCard>
+            )}
+
+            {(createdAt || updatedAt) && (
+              <NeoCard className="p-6 mb-6">
+                <h2 className="font-display text-xl font-bold text-forest-ink mb-2">Timeline</h2>
+                <div className="space-y-2">
+                  {createdAt && (
+                    <p className="font-body text-sm text-forest-ink/80">
+                      <span className="text-forest-ink/60">Joined: </span>
+                      {createdAt.toLocaleDateString()}
+                    </p>
+                  )}
+                  {updatedAt && (
+                    <p className="font-body text-sm text-forest-ink/80">
+                      <span className="text-forest-ink/60">Last updated: </span>
+                      {updatedAt.toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              </NeoCard>
+            )}
           </div>
           <div>
             <NeoCard className="p-6 sticky top-8">
-              <MatchScoreRing score={75} size={140} className="mx-auto mb-4" />
+              {matchScore !== null && user?.role === 'investor' ? (
+                <MatchScoreRing score={matchScore} size={140} className="mx-auto mb-4" />
+              ) : (
+                <div className="w-[140px] h-[140px] mx-auto mb-4 flex items-center justify-center rounded-full bg-warm-sand/40 border border-border">
+                  <span className="font-display text-2xl font-bold text-forest-ink/60">—</span>
+                </div>
+              )}
               <p className="font-body text-sm text-forest-ink/80">Stage: {String(startup.stage || '—')}</p>
               <p className="font-body text-sm text-forest-ink/80 mt-1">Sector: {String(startup.sector || '—')}</p>
               <p className="font-body text-sm text-forest-ink/80 mt-1">Funding sought: ₹{Number(startup.fundingSought || 0)}L</p>

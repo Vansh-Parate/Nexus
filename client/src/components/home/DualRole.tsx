@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 export const DualRole = () => {
     return (
-        <section className="relative min-h-[80vh] flex flex-col lg:flex-row">
+        <section id="for-startups" className="relative min-h-[80vh] flex flex-col lg:flex-row scroll-mt-28">
 
             {/* Left (Startups) */}
             <div className="w-full lg:w-1/2 bg-[#3e3530] lg:[clip-path:polygon(0_0,95%_0,100%_100%,0_100%)] p-12 lg:p-[7.5rem] flex items-center relative z-10">
@@ -26,7 +26,7 @@ export const DualRole = () => {
             </div>
 
             {/* Right (Investors) */}
-            <div className="w-full lg:w-1/2 bg-[#fffbf8] p-12 lg:p-[7.5rem] flex items-center">
+            <div id="for-investors" className="w-full lg:w-1/2 bg-[#fffbf8] p-12 lg:p-[7.5rem] flex items-center scroll-mt-28">
                 <div className="max-w-[30rem] mr-auto lg:ml-12">
                     <span className="text-[0.625rem] font-medium tracking-[0.15em] uppercase text-[#7a9b76] mb-4 block">For Investors</span>
                     <h2 className="font-display font-semibold text-[2.5rem] lg:text-[3rem] text-[#3e3530] mb-8 leading-[1.1] tracking-tight">Filter once.<br />Match always.</h2>
