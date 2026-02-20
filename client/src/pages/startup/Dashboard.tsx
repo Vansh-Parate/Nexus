@@ -44,8 +44,8 @@ export default function StartupDashboard() {
   };
 
   const handleClosePanel = () => {
-    setIsPanelOpen(false);
-  };
+    setIsPanelOpen(false)
+  }
 
   if (loading) {
     return (
