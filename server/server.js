@@ -87,7 +87,15 @@ app.get('/api/uploads/:filename', (req, res) => {
   res.sendFile(path.resolve(filePath))
 })
 
+// Serve static assets (e.g. logos) from the shared public folder
+const publicDir = path.join(__dirname, '..', 'public')
+if (fs.existsSync(publicDir)) {
+  app.use(express.static(publicDir))
+}
+
+// Mount auth routes under both /api/auth and /auth for compatibility
 app.use('/api/auth', authRoutes)
+app.use('/auth', authRoutes)
 app.use('/api/matches', matchesRoutes)
 app.use('/api/startups', startupsRoutes)
 app.use('/api/investors', investorsRoutes)
