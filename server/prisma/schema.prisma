@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role     // startup | investor
+  name      String?
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  startup  Startup?
+  investor Investor?
+}
+
+enum Role {
+  startup
+  investor
+}
+
+model Startup {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startupName  String
+  founderName  String
+  sector       String
+  stage        String   // Idea | MVP | Early Revenue | Scaling
+  fundingSought Int    // in Lakhs
+  pitch        String?  @db.Text
+  location     String?
+  description  String?  @db.Text
+  traction     Json?    // { revenue, users, growth }
+  useOfFunds   String?  @db.Text
+  foundedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  connectionRequestsSent    ConnectionRequest[] @relation("SentByStartup")
+  connectionRequestsReceived ConnectionRequest[] @relation("ReceivedByStartup")
+}
+
+model Investor {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName        String
+  firmName        String?
+  investorType    String   // Angel | VC | Family Office | Corporate VC
+  preferredSectors String[] // array of sector strings
+  ticketMin       Int      // Lakhs
+  ticketMax       Int      // Lakhs
+  preferredStages String[] // array of stage strings
+  portfolioSize   Int?
+  thesis          String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  connectionRequestsSent    ConnectionRequest[] @relation("SentByInvestor")
+  connectionRequestsReceived ConnectionRequest[] @relation("ReceivedByInvestor")
+}
+
+model ConnectionRequest {
+  id          String   @id @default(cuid())
+  status      RequestStatus @default(pending)
+  fromRole    Role
+  fromStartupId String?
+  fromInvestorId String?
+  toStartupId   String?
+  toInvestorId  String?
+  startupSender   Startup?  @relation("SentByStartup", fields: [fromStartupId], references: [id], onDelete: Cascade)
+  investorSender Investor? @relation("SentByInvestor", fields: [fromInvestorId], references: [id], onDelete: Cascade)
+  startupReceiver  Startup?  @relation("ReceivedByStartup", fields: [toStartupId], references: [id], onDelete: Cascade)
+  investorReceiver Investor? @relation("ReceivedByInvestor", fields: [toInvestorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum RequestStatus {
+  pending
+  accepted
+  declined
+}

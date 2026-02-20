@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Minimalist natural palette */
+  --color-cream: #FAF9F7;
+  --color-warm-sand: #F0EDE8;
+  --color-terracotta: #B85C38;
+  --color-burnt-amber: #C99A6E;
+  --color-forest-ink: #3D4F3D;
+  --color-dusty-sage: #8FAF7E;
+  --color-clay-red: #B8544A;
+  --color-chalk-white: #FFFFFF;
+  --color-charcoal: #2D2D2D;
+  --color-border: #E5E2DD;
+
+  /* Soft shadows */
+  --shadow-soft: 0 1px 3px rgba(45, 45, 45, 0.06);
+  --shadow-card: 0 4px 12px rgba(45, 45, 45, 0.06);
+  --shadow-card-hover: 0 8px 24px rgba(45, 45, 45, 0.08);
+
+  /* Fonts */
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-label: 'DM Sans', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background-color: var(--color-cream);
+  color: var(--color-forest-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+}
+
+.font-display { font-family: var(--font-display); }
+.font-body { font-family: var(--font-body); }
+.font-label { font-family: var(--font-label); }
