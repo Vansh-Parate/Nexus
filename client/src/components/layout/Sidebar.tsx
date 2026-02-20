@@ -1,71 +1,65 @@
-import { NavLink, useNavigate } from 'react-router-dom'
-import { Home, User, Zap, Handshake, MessageSquare, Settings, LogOut } from 'lucide-react'
-import { NeoButton } from '../ui/NeoButton'
-import { useAuthStore } from '../../store/authStore'
+import { NavLink } from 'react-router-dom';
+import { Icon } from '@iconify/react';
+import { useAuthStore } from '../../store/authStore';
 
 const navStartup = [
-  { to: '/startup/dashboard', label: 'Dashboard', icon: Home },
-  { to: '/startup/profile/edit', label: 'My Profile', icon: User },
-  { to: '/startup/matches', label: 'Matches', icon: Zap },
-  { to: '/startup/requests', label: 'Connection Requests', icon: Handshake },
-  { to: '#', label: 'Messages', icon: MessageSquare },
-  { to: '#', label: 'Settings', icon: Settings },
-]
+  { to: '/startup/dashboard', icon: 'solar:widget-linear', label: 'Dashboard' },
+  { to: '/startup/matches', icon: 'solar:users-group-rounded-linear', label: 'Matches' },
+  { to: '/startup/requests', icon: 'solar:chat-round-line-linear', label: 'Requests', hasIndicator: true },
+  { to: '#', icon: 'solar:bookmark-linear', label: 'Saved' },
+];
 
 const navInvestor = [
-  { to: '/investor/dashboard', label: 'Dashboard', icon: Home },
-  { to: '/investor/profile/edit', label: 'My Profile', icon: User },
-  { to: '/investor/matches', label: 'Matches', icon: Zap },
-  { to: '/investor/requests', label: 'Connection Requests', icon: Handshake },
-  { to: '#', label: 'Messages', icon: MessageSquare },
-  { to: '#', label: 'Settings', icon: Settings },
-]
+  { to: '/investor/dashboard', icon: 'solar:widget-linear', label: 'Dashboard' },
+  { to: '/investor/matches', icon: 'solar:users-group-rounded-linear', label: 'Matches' },
+  { to: '/investor/requests', icon: 'solar:chat-round-line-linear', label: 'Requests', hasIndicator: true },
+  { to: '#', icon: 'solar:bookmark-linear', label: 'Saved' },
+];
 
 export function Sidebar() {
-  const { user, logout } = useAuthStore()
-  const navigate = useNavigate()
-  const nav = user?.role === 'startup' ? navStartup : navInvestor
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+  const { user } = useAuthStore();
+  const navItems = user?.role === 'startup' ? navStartup : navInvestor;
+  const profileLink = user?.role === 'startup' ? '/startup/profile/edit' : '/investor/profile/edit';
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-[240px] bg-forest-ink text-cream flex flex-col z-50">
-      <div className="p-4 border-b border-cream/20">
-        <NavLink to="/" className="font-display text-xl font-bold text-cream">
-          VEGA
-        </NavLink>
+    <nav className="fixed bottom-0 w-full h-16 bg-[#f7f4f0] border-t border-[#e8e3dc] z-30 flex flex-row justify-around items-center md:top-0 md:left-0 md:w-16 md:h-screen md:flex-col md:justify-start md:border-t-0 md:border-r md:py-6 transition-all duration-300">
+      <div className="hidden md:flex font-display text-xl tracking-tighter font-semibold text-[#3e3530] mb-8 select-none">
+        FB
       </div>
-      <nav className="flex-1 py-4">
-        {nav.map(({ to, label, icon: Icon }) => (
+
+      <div className="flex flex-row md:flex-col gap-2 md:gap-4 w-full px-2 md:px-0 items-center justify-center">
+        {navItems.map((item) => (
           <NavLink
-            key={label}
-            to={to}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg font-body text-sm transition-colors ${
-                isActive ? 'bg-terracotta/20 text-cream border-l-2 border-terracotta' : 'hover:bg-white/10'
-              }`
-            }
+            key={item.label}
+            to={item.to}
+            title={item.label}
+            className={({ isActive }) => `w-10 h-10 rounded-xl flex items-center justify-center transition-colors relative ${isActive ? 'bg-[#e8e3dc] text-[#d4a574]' : 'text-[#9b918a] hover:bg-[#e8e3dc]/50 hover:text-[#3e3530]'}`}
           >
-            <Icon className="w-4 h-4 shrink-0" />
-            {label}
+            <Icon icon={item.icon} className="text-xl" strokeWidth="1.5" />
+            {item.hasIndicator && (
+              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#d4a574] hidden"></span>
+            )}
           </NavLink>
         ))}
-      </nav>
-      <div className="p-4 border-t border-cream/20">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-9 h-9 rounded-lg bg-terracotta flex items-center justify-center font-display font-bold text-chalk-white">
-            {user?.name?.charAt(0) ?? '?'}
-          </div>
-          <span className="font-body text-sm truncate">{user?.name}</span>
-        </div>
-        <NeoButton variant="ghost" className="w-full justify-start text-cream border-cream/30 hover:bg-cream/10" onClick={handleLogout}>
-          <LogOut className="w-4 h-4" />
-          Logout
-        </NeoButton>
       </div>
-    </aside>
-  )
+
+      <div className="hidden md:flex flex-col gap-4 mt-auto items-center">
+        <NavLink
+          to={profileLink}
+          title="Profile"
+          className={({ isActive }) => `w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isActive ? 'bg-[#e8e3dc] text-[#d4a574]' : 'text-[#9b918a] hover:bg-[#e8e3dc]/50 hover:text-[#3e3530]'}`}
+        >
+          <Icon icon="solar:user-rounded-linear" className="text-xl" strokeWidth="1.5" />
+        </NavLink>
+
+        <NavLink
+          to="#"
+          title="Settings"
+          className={({ isActive }) => `w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isActive ? 'bg-[#e8e3dc] text-[#d4a574]' : 'text-[#9b918a] hover:bg-[#e8e3dc]/50 hover:text-[#3e3530]'}`}
+        >
+          <Icon icon="solar:settings-linear" className="text-xl" strokeWidth="1.5" />
+        </NavLink>
+      </div>
+    </nav>
+  );
 }

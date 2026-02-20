@@ -1,5 +1,7 @@
 # Dependencies
 node_modules/
+client/node_modules/
+server/node_modules/
 
 # Environment and secrets
 .env
@@ -34,6 +36,10 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# ML artifacts (trained model, generated data)
+server/ml_artifacts/
+server/investor_startup_matching_regression.csv
 
 # Optional
 coverage/
