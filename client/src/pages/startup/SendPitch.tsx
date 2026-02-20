@@ -289,6 +289,22 @@ export default function SendPitch() {
                 <p className="font-body text-xs text-forest-ink/70 mt-1">
                   The investor will be notified. Redirecting to dashboard...
                 </p>
+                <div className="mt-6 pt-6 border-t border-terracotta/20">
+                  <p className="font-body text-sm text-forest-ink/80 mb-2">Update your pitch deck for future pitches</p>
+                  <label className="inline-flex items-center gap-2 font-body text-sm text-terracotta underline cursor-pointer hover:no-underline">
+                    <input
+                      type="file"
+                      accept=".pdf,application/pdf"
+                      className="sr-only"
+                      disabled={uploadingPdf}
+                      onChange={handlePdfUpload}
+                    />
+                    {uploadingPdf ? 'Uploading…' : 'Upload new PDF'}
+                  </label>
+                  {uploadPdfError && (
+                    <p className="font-body text-xs text-red-500 mt-2">{uploadPdfError}</p>
+                  )}
+                </div>
               </NeoCard>
             ) : (
               <div className="flex gap-3">

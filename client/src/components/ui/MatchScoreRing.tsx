@@ -8,7 +8,8 @@ interface MatchScoreRingProps {
 }
 
 export function MatchScoreRing({ score, size = 120, className = '' }: MatchScoreRingProps) {
-  const data = [{ name: 'score', value: score, fill: 'var(--color-terracotta)' }]
+  const clampedScore = Math.min(100, Math.max(0, score))
+  const data = [{ name: 'score', value: clampedScore, fill: 'var(--color-terracotta)' }]
   return (
     <div className={`relative ${className}`} style={{ width: size, height: size }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -19,7 +20,7 @@ export function MatchScoreRing({ score, size = 120, className = '' }: MatchScore
           startAngle={90}
           endAngle={-270}
         >
-          <RadialBar background dataKey="value" cornerRadius={0} />
+          <RadialBar background dataKey="value" cornerRadius={0} max={100} />
         </RadialBarChart>
       </ResponsiveContainer>
       <div className="absolute inset-0 flex items-center justify-center">
@@ -29,7 +30,7 @@ export function MatchScoreRing({ score, size = 120, className = '' }: MatchScore
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4 }}
         >
-          {score}%
+          {clampedScore}%
         </motion.span>
       </div>
     </div>

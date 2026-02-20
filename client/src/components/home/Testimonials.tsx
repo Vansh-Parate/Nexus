@@ -3,7 +3,7 @@ import { Icon } from '@iconify/react';
 
 export const Testimonials = () => {
     return (
-        <section className="bg-[#3e3530] py-[6.25rem] px-6 lg:px-[5rem] overflow-hidden">
+        <section id="success-stories" className="bg-[#3e3530] py-[6.25rem] px-6 lg:px-[5rem] overflow-hidden scroll-mt-28">
             <h2 className="font-display italic font-semibold text-[2.5rem] lg:text-[3.25rem] text-[#fffbf8] mb-12 text-center tracking-tight">"Connections that became companies."</h2>
 
             <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 hide-scrollbar max-w-[80rem] mx-auto">

@@ -16,11 +16,11 @@ export const Navbar = () => {
             </div>
 
             <div className="hidden lg:flex items-center gap-8">
-                <a href="#" className="text-[0.875rem] font-medium text-[#6b615b] hover:text-[#d4a574] transition-colors">How It Works</a>
-                <a href="#" className="text-[0.875rem] font-medium text-[#6b615b] hover:text-[#d4a574] transition-colors">For Startups</a>
-                <a href="#" className="text-[0.875rem] font-medium text-[#6b615b] hover:text-[#d4a574] transition-colors">For Investors</a>
-                <a href="#" className="text-[0.875rem] font-medium text-[#6b615b] hover:text-[#d4a574] transition-colors">Match Engine</a>
-                <a href="#" className="text-[0.875rem] font-medium text-[#6b615b] hover:text-[#d4a574] transition-colors">Success Stories</a>
+                <Link to="/#how-it-works" className="text-[0.875rem] font-medium text-[#6b615b] hover:text-[#d4a574] transition-colors">How It Works</Link>
+                <Link to="/#for-startups" className="text-[0.875rem] font-medium text-[#6b615b] hover:text-[#d4a574] transition-colors">For Startups</Link>
+                <Link to="/#for-investors" className="text-[0.875rem] font-medium text-[#6b615b] hover:text-[#d4a574] transition-colors">For Investors</Link>
+                <Link to="/#match-engine" className="text-[0.875rem] font-medium text-[#6b615b] hover:text-[#d4a574] transition-colors">Match Engine</Link>
+                <Link to="/#success-stories" className="text-[0.875rem] font-medium text-[#6b615b] hover:text-[#d4a574] transition-colors">Success Stories</Link>
             </div>
 
             <div className="flex items-center gap-4">

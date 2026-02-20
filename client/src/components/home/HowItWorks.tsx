@@ -3,7 +3,7 @@ import { Icon } from '@iconify/react';
 
 export const HowItWorks = () => {
     return (
-        <section className="bg-[#fffbf8] py-[7.5rem] px-6 lg:px-[5rem]">
+        <section id="how-it-works" className="bg-[#fffbf8] py-[7.5rem] px-6 lg:px-[5rem] scroll-mt-28">
             <div className="max-w-[80rem] mx-auto">
                 <div className="text-center mb-16 lg:mb-24">
                     <span className="text-[0.625rem] font-medium tracking-[0.15em] uppercase text-[#9b918a] block mb-4">The Engine</span>

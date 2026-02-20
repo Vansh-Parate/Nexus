@@ -2,7 +2,7 @@ import React from 'react';
 
 export const ScoreExplainer = () => {
     return (
-        <section className="bg-[#f7f4f0] py-[6.25rem] px-6 lg:px-[5rem]">
+        <section id="match-engine" className="bg-[#f7f4f0] py-[6.25rem] px-6 lg:px-[5rem] scroll-mt-28">
             <div className="max-w-[80rem] mx-auto bg-white rounded-[1rem] shadow-sm border border-[#e8e3dc] overflow-hidden flex flex-col lg:flex-row">
 
                 {/* Visual Left */}

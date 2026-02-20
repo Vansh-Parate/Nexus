@@ -26,6 +26,10 @@ export default function InvestorMatches() {
   const [error, setError] = useState<string | null>(null)
   const [sector, setSector] = useState('')
   const [stage, setStage] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
+  const [interestLoadingId, setInterestLoadingId] = useState<string | null>(null)
+  const [interestSentIds, setInterestSentIds] = useState<Set<string>>(() => new Set())
+  const [interestError, setInterestError] = useState<string | null>(null)
 
   const fetchMatches = () => {
     setError(null)
@@ -47,55 +51,97 @@ export default function InvestorMatches() {
     fetchMatches()
   }, [sector, stage])
 
-  return (
-    <div className="min-h-screen flex">
-      <Sidebar />
-      <main className="flex-1 md:ml-[4.5rem] flex">
-        <aside className="w-[280px] shrink-0 p-6 border-r border-border bg-forest-ink text-cream">
-          <h2 className="font-display text-2xl font-bold mb-4">Filters</h2>
-          <label className="font-body text-sm block mb-2">Sector</label>
-          <select
-            className="w-full font-body text-sm px-3 py-2 border border-border rounded-lg bg-warm-sand text-forest-ink mb-4"
-            value={sector}
-            onChange={(e) => setSector(e.target.value)}
-          >
-            <option value="">All</option>
-            <option value="EdTech">EdTech</option>
-            <option value="FinTech">FinTech</option>
-            <option value="HealthTech">HealthTech</option>
-            <option value="SaaS">SaaS</option>
-            <option value="AI">AI</option>
-            <option value="E-commerce">E-commerce</option>
-            <option value="Cybersecurity">Cybersecurity</option>
-          </select>
-          <label className="font-body text-sm block mb-2">Stage</label>
-          <select
-            className="w-full font-body text-sm px-3 py-2 border border-border rounded-lg bg-warm-sand text-forest-ink mb-4"
-            value={stage}
-            onChange={(e) => setStage(e.target.value)}
-          >
-            <option value="">All</option>
-            <option value="MVP">MVP</option>
-            <option value="Early Revenue">Early Revenue</option>
-            <option value="Scaling">Scaling</option>
-          </select>
-          <NeoButton variant="primary" className="w-full">Apply</NeoButton>
-        </aside>
+  const applyFilters = () => {
+    setShowFilters(false)
+  }
 
-        <div className="flex-1 p-8 overflow-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-xs text-forest-ink/60 font-medium">AI-Powered Ranking</span>
-              <span className="text-[10px] bg-terracotta/10 text-terracotta px-2 py-0.5 rounded-full font-semibold">
-                ML Sorted
-              </span>
+  const expressInterest = async (startupId: string) => {
+    if (!startupId) return
+    if (interestLoadingId) return
+    setInterestError(null)
+    setInterestLoadingId(startupId)
+    try {
+      await api.post('/requests', { toId: startupId, toRole: 'startup' })
+      setInterestSentIds((prev) => new Set([...Array.from(prev), startupId]))
+    } catch (err: any) {
+      setInterestError(err?.response?.data?.message || 'Failed to send interest. Try again.')
+    } finally {
+      setInterestLoadingId(null)
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex bg-chalk-white">
+      <Sidebar />
+      <main className="flex-1 pl-[240px] flex">
+        <div className="flex-1 p-10 overflow-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="max-w-6xl"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="font-display text-2xl font-bold text-forest-ink">Investor Matches</h1>
+              <div className="relative">
+                <NeoButton
+                  variant="outline"
+                  className="text-xs px-3 py-1.5"
+                  onClick={() => setShowFilters((prev) => !prev)}
+                >
+                  Filters
+                </NeoButton>
+                {showFilters && (
+                  <div className="absolute right-0 mt-2 w-56 bg-chalk-white border border-border rounded-lg shadow-lg p-4 z-10 space-y-3">
+                    <div>
+                      <p className="font-body text-xs text-forest-ink/70 mb-1">Sector</p>
+                      <select
+                        className="w-full font-body text-sm px-3 py-2 border border-border rounded-lg bg-warm-sand text-forest-ink"
+                        value={sector}
+                        onChange={(e) => setSector(e.target.value)}
+                      >
+                        <option value="">All</option>
+                        <option value="EdTech">EdTech</option>
+                        <option value="FinTech">FinTech</option>
+                        <option value="HealthTech">HealthTech</option>
+                        <option value="SaaS">SaaS</option>
+                        <option value="AI">AI</option>
+                        <option value="E-commerce">E-commerce</option>
+                        <option value="Cybersecurity">Cybersecurity</option>
+                      </select>
+                    </div>
+                    <div>
+                      <p className="font-body text-xs text-forest-ink/70 mb-1">Stage</p>
+                      <select
+                        className="w-full font-body text-sm px-3 py-2 border border-border rounded-lg bg-warm-sand text-forest-ink"
+                        value={stage}
+                        onChange={(e) => setStage(e.target.value)}
+                      >
+                        <option value="">All</option>
+                        <option value="MVP">MVP</option>
+                        <option value="Early Revenue">Early Revenue</option>
+                        <option value="Scaling">Scaling</option>
+                      </select>
+                    </div>
+                    <NeoButton variant="primary" className="w-full text-sm" onClick={applyFilters}>
+                      Apply
+                    </NeoButton>
+                  </div>
+                )}
+              </div>
             </div>
+
             {loading ? (
-              <p className="font-body text-sm">Loading...</p>
+              <p className="font-body text-sm text-forest-ink/70">Loading...</p>
             ) : error ? (
               <NeoCard className="p-12 text-center">
                 <p className="font-body text-forest-ink/80">{error}</p>
-                <NeoButton variant="primary" className="mt-4" onClick={fetchMatches}>Retry</NeoButton>
+                <NeoButton variant="primary" className="mt-4" onClick={fetchMatches}>
+                  Retry
+                </NeoButton>
+              </NeoCard>
+            ) : interestError ? (
+              <NeoCard className="p-4 mb-4 border border-red-200 bg-red-50">
+                <p className="font-body text-sm text-red-700">{interestError}</p>
               </NeoCard>
             ) : matches.length === 0 ? (
               <EmptyState
@@ -124,7 +170,18 @@ export default function InvestorMatches() {
                       <Link to={`/startup/profile/${m.id}`}>
                         <NeoButton variant="outline" className="text-sm">View Pitch</NeoButton>
                       </Link>
-                      <NeoButton variant="primary" className="text-sm">Express Interest →</NeoButton>
+                      <NeoButton
+                        variant="primary"
+                        className="text-sm"
+                        onClick={() => expressInterest(m.id)}
+                        disabled={interestLoadingId === m.id || interestSentIds.has(m.id)}
+                      >
+                        {interestSentIds.has(m.id)
+                          ? 'Interest Sent'
+                          : interestLoadingId === m.id
+                            ? 'Sending...'
+                            : 'Express Interest →'}
+                      </NeoButton>
                     </div>
                   </NeoCard>
                 ))}
