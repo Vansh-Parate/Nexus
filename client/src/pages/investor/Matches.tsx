@@ -36,7 +36,7 @@ export default function InvestorMatches() {
   return (
     <div className="min-h-screen flex">
       <Sidebar />
-      <main className="flex-1 pl-[240px] flex">
+      <main className="flex-1 md:ml-[4.5rem] flex">
         <aside className="w-[280px] shrink-0 p-6 border-r border-border bg-forest-ink text-cream">
           <h2 className="font-display text-2xl font-bold mb-4">Filters</h2>
           <label className="font-body text-sm block mb-2">Sector</label>

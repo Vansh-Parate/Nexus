@@ -36,7 +36,7 @@ export default function StartupMatches() {
   return (
     <div className="min-h-screen flex">
       <Sidebar />
-      <main className="flex-1 pl-[240px] flex">
+      <main className="flex-1 md:ml-[4.5rem] flex">
         <aside className="w-[280px] shrink-0 p-6 border-r border-border bg-warm-sand/40">
           <h2 className="font-display text-2xl font-bold text-forest-ink mb-4">Filter Investors</h2>
           <select className="w-full font-body text-sm px-3 py-2 border border-border rounded-lg bg-chalk-white mb-4" value={sector} onChange={(e) => setSector(e.target.value)}>

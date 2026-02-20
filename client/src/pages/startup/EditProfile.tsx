@@ -27,7 +27,7 @@ export default function StartupEditProfile() {
   return (
     <div className="min-h-screen flex">
       <Sidebar />
-      <main className="flex-1 pl-[240px] p-8">
+      <main className="flex-1 md:ml-[4.5rem] p-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-[720px] mx-auto">
           <h1 className="font-display text-3xl font-bold text-forest-ink mb-8">Edit Profile</h1>
           <NeoCard className="p-8">

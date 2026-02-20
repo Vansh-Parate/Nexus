@@ -233,6 +233,10 @@ body {
     from { opacity: 0; transform: translateY(1.25rem); }
     to { opacity: 1; transform: translateY(0); }
 }
+.investor-card-new {
+    animation: fade-up 0.5s ease both;
+    opacity: 0;
+}
 .stagger-1 { animation: fade-up 0.8s ease-out 0s forwards; opacity: 0; }
 .stagger-2 { animation: fade-up 0.8s ease-out 0.15s forwards; opacity: 0; }
 .stagger-3 { animation: fade-up 0.8s ease-out 0.3s forwards; opacity: 0; }
