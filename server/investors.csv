@@ -1,0 +1,41 @@
+investor_id,investor_name,preferred_industry,preferred_stage,geography_focus,ticket_min_lakhs,ticket_max_lakhs,thesis
+IN001,MedVenture Partners,HealthTech,Pre-Seed,Global,62,699,Actively investing in HealthTech and high-growth startups
+IN002,Commerce Capital Fund,E-commerce,Seed,Global,136,292,Actively investing in E-commerce and high-growth startups
+IN003,HealthQuest Ventures,HealthTech,Series B,Global,14,397,Actively investing in HealthTech and high-growth startups
+IN004,CareSpan Investments,HealthTech,Pre-Seed,Global,50,305,Actively investing in HealthTech and high-growth startups
+IN005,SecureGate Capital,Cybersecurity,Seed,India,96,585,Actively investing in Cybersecurity and high-growth startups
+IN006,Wellness Equity Partners,HealthTech,Pre-Seed,Global,107,717,Actively investing in HealthTech and high-growth startups
+IN007,CyberShield Ventures,Cybersecurity,Series B,India,146,436,Actively investing in Cybersecurity and high-growth startups
+IN008,Neural Axis Capital,AI,Pre-Seed,India,31,217,Actively investing in AI and high-growth startups
+IN009,LearnScale Partners,EdTech,Seed,Global,78,468,Actively investing in EdTech and high-growth startups
+IN010,MedTech Growth Fund,HealthTech,Series A,Global,97,263,Actively investing in HealthTech and high-growth startups
+IN011,EduNova Ventures,EdTech,Series B,India,44,687,Actively investing in EdTech and high-growth startups
+IN012,HealthBridge Capital,HealthTech,Pre-Seed,Global,114,238,Actively investing in HealthTech and high-growth startups
+IN013,DefenseStack Investors,Cybersecurity,Seed,India,42,441,Actively investing in Cybersecurity and high-growth startups
+IN014,Retail Ventures India,E-commerce,Series B,India,29,663,Actively investing in E-commerce and high-growth startups
+IN015,MarketPulse Capital,E-commerce,Pre-Seed,Global,78,501,Actively investing in E-commerce and high-growth startups
+IN016,D2C Growth Partners,E-commerce,Pre-Seed,India,127,460,Actively investing in E-commerce and high-growth startups
+IN017,DataGuard Ventures,Cybersecurity,Pre-Seed,India,85,147,Actively investing in Cybersecurity and high-growth startups
+IN018,FinServe Capital,FinTech,Series B,India,39,129,Actively investing in FinTech and high-growth startups
+IN019,SkillForge Partners,EdTech,Series B,Global,51,219,Actively investing in EdTech and high-growth startups
+IN020,TeachTech Ventures,EdTech,Seed,Global,50,205,Actively investing in EdTech and high-growth startups
+IN021,CloudFirst Capital,SaaS,Series A,Global,150,459,Actively investing in SaaS and high-growth startups
+IN022,Clinica Ventures,HealthTech,Pre-Seed,Global,63,780,Actively investing in HealthTech and high-growth startups
+IN023,PayStream Partners,FinTech,Pre-Seed,Global,12,364,Actively investing in FinTech and high-growth startups
+IN024,ScaleStack Ventures,SaaS,Series B,India,90,548,Actively investing in SaaS and high-growth startups
+IN025,LendingTree Capital,FinTech,Series A,India,163,679,Actively investing in FinTech and high-growth startups
+IN026,MedInnovate Fund,HealthTech,Seed,Global,168,773,Actively investing in HealthTech and high-growth startups
+IN027,AI Nexus India,AI,Series A,India,76,313,Actively investing in AI and high-growth startups
+IN028,HealthAxis Partners,HealthTech,Seed,India,73,492,Actively investing in HealthTech and high-growth startups
+IN029,ThreatWatch Capital,Cybersecurity,Series A,India,32,540,Actively investing in Cybersecurity and high-growth startups
+IN030,DeepMind Ventures,AI,Series A,Global,68,517,Actively investing in AI and high-growth startups
+IN031,PayTech Growth Fund,FinTech,Series A,Global,57,431,Actively investing in FinTech and high-growth startups
+IN032,EdVerse Partners,EdTech,Series A,India,35,642,Actively investing in EdTech and high-growth startups
+IN033,LearnLabs Ventures,EdTech,Seed,Global,15,314,Actively investing in EdTech and high-growth startups
+IN034,BankingStack Capital,FinTech,Series A,India,151,273,Actively investing in FinTech and high-growth startups
+IN035,FinWealth Partners,FinTech,Pre-Seed,Global,84,501,Actively investing in FinTech and high-growth startups
+IN036,Workflow Ventures,SaaS,Seed,Global,35,598,Actively investing in SaaS and high-growth startups
+IN037,Digital Rupee Capital,FinTech,Seed,India,55,258,Actively investing in FinTech and high-growth startups
+IN038,SecureNet Partners,Cybersecurity,Series A,Global,88,247,Actively investing in Cybersecurity and high-growth startups
+IN039,SchoolTech India,EdTech,Seed,India,46,654,Actively investing in EdTech and high-growth startups
+IN040,CyberForge Ventures,Cybersecurity,Series A,India,169,907,Actively investing in Cybersecurity and high-growth startups

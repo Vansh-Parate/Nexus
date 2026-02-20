@@ -2,27 +2,93 @@
 @import "tailwindcss";
 
 @theme {
-  /* Minimalist natural palette */
-  --color-cream: #FAF9F7;
-  --color-warm-sand: #F0EDE8;
-  --color-terracotta: #B85C38;
-  --color-burnt-amber: #C99A6E;
-  --color-forest-ink: #3D4F3D;
-  --color-dusty-sage: #8FAF7E;
-  --color-clay-red: #B8544A;
-  --color-chalk-white: #FFFFFF;
-  --color-charcoal: #2D2D2D;
-  --color-border: #E5E2DD;
+  /* Primary */
+  --color-primary: #d4a574;
+  --color-primary-light: #e8c9a0;
+  --color-primary-dark: #b8865a;
 
-  /* Soft shadows */
-  --shadow-soft: 0 1px 3px rgba(45, 45, 45, 0.06);
-  --shadow-card: 0 4px 12px rgba(45, 45, 45, 0.06);
-  --shadow-card-hover: 0 8px 24px rgba(45, 45, 45, 0.08);
+  /* Background & surface */
+  --color-background: #fffbf8;
+  --color-foreground: #3e3530;
+  --color-surface: #f7f4f0;
+  --color-surface-dark: #e8e3dc;
+
+  /* Text */
+  --color-text-primary: #3e3530;
+  --color-text-secondary: #6b615b;
+  --color-text-muted: #9b918a;
+
+  /* Accents */
+  --color-accent-success: #7a9b76;
+  --color-accent-warning: #d89b6a;
+  --color-accent-danger: #c77567;
+  --color-safety-high: #7a9b76;
+  --color-safety-medium: #d4a574;
+  --color-safety-low: #c77567;
+
+  /* Semantic (map to theme for existing components) */
+  --color-cream: #fffbf8;
+  --color-warm-sand: #e8e3dc;
+  --color-terracotta: #d4a574;
+  --color-burnt-amber: #d89b6a;
+  --color-forest-ink: #3e3530;
+  --color-dusty-sage: #7a9b76;
+  --color-clay-red: #c77567;
+  --color-chalk-white: #f7f4f0;
+  --color-charcoal: #3e3530;
+  --color-border: #e8e3dc;
+
+  /* Radius */
+  --radius-sm: 0.5rem;
+  --radius: 0.75rem;
+  --radius-lg: 1rem;
+
+  /* Shadows */
+  --shadow-soft: 0 1px 3px rgba(62, 53, 48, 0.06);
+  --shadow-card: 0 4px 12px rgba(62, 53, 48, 0.06);
+  --shadow-card-hover: 0 8px 24px rgba(62, 53, 48, 0.1);
 
   /* Fonts */
   --font-display: 'Playfair Display', serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
   --font-label: 'DM Sans', system-ui, sans-serif;
+}
+
+:root {
+  --primary: #d4a574;
+  --primary-light: #e8c9a0;
+  --primary-dark: #b8865a;
+  --background: 30 50% 99%;
+  --foreground: 20 10% 20%;
+  --surface: #f7f4f0;
+  --surface-dark: #e8e3dc;
+  --text-primary: #3e3530;
+  --text-secondary: #6b615b;
+  --text-muted: #9b918a;
+  --accent-success: #7a9b76;
+  --accent-warning: #d89b6a;
+  --accent-danger: #c77567;
+  --safety-high: #7a9b76;
+  --safety-medium: #d4a574;
+  --safety-low: #c77567;
+  --card: 30 50% 99%;
+  --card-foreground: 20 10% 20%;
+  --popover: 30 50% 99%;
+  --popover-foreground: 20 10% 20%;
+  --primary-hsl: 27 42% 64%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 30 15% 95%;
+  --secondary-foreground: 20 10% 20%;
+  --muted: 30 15% 95%;
+  --muted-foreground: 20 6% 45%;
+  --accent: 30 15% 95%;
+  --accent-foreground: 20 10% 20%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 30 15% 88%;
+  --input: 30 15% 88%;
+  --ring: 27 42% 64%;
+  --radius: 0.75rem;
 }
 
 * {
@@ -32,9 +98,10 @@
 body {
   margin: 0;
   font-family: var(--font-body);
-  background-color: var(--color-cream);
-  color: var(--color-forest-ink);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 .bg-noise {
@@ -45,3 +112,142 @@ body {
 .font-display { font-family: var(--font-display); }
 .font-body { font-family: var(--font-body); }
 .font-label { font-family: var(--font-label); }
+
+/* Utilities */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.gradient-mesh {
+  background:
+    radial-gradient(at 0% 0%, rgba(212, 165, 116, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(122, 155, 118, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(216, 155, 106, 0.05) 0px, transparent 50%);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.map-bg {
+  background-color: #f7f4f0;
+  background-image: radial-gradient(#e8e3dc 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.maplibregl-popup-content {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+.maplibregl-popup-tip {
+  display: none !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e8e3dc;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d4cfc6;
+}
+
+/* Animations from index1.html */
+@keyframes pulse-dot {
+    0% { box-shadow: 0 0 0 0 rgba(122, 155, 118, 0.4); }
+    70% { box-shadow: 0 0 0 0.375rem rgba(122, 155, 118, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(122, 155, 118, 0); }
+}
+.animate-pulse-dot { animation: pulse-dot 2s infinite; }
+
+@keyframes fill-ring {
+    from { stroke-dasharray: 0 1000; }
+    to { stroke-dasharray: 885 1000; } /* ~94% of circumference */
+}
+.animate-ring { animation: fill-ring 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* Orbit System */
+.orbit-system {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes orbit-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+@keyframes orbit-counter-rotate {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+.orbit-track {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px dashed var(--surface-dark);
+    animation: orbit-rotate linear infinite;
+}
+
+.orbit-card-wrapper {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.orbit-card {
+    animation: orbit-counter-rotate linear infinite;
+}
+
+/* Staggered Load */
+@keyframes fade-up {
+    from { opacity: 0; transform: translateY(1.25rem); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.stagger-1 { animation: fade-up 0.8s ease-out 0s forwards; opacity: 0; }
+.stagger-2 { animation: fade-up 0.8s ease-out 0.15s forwards; opacity: 0; }
+.stagger-3 { animation: fade-up 0.8s ease-out 0.3s forwards; opacity: 0; }
+.stagger-4 { animation: fade-up 0.8s ease-out 0.45s forwards; opacity: 0; }
+.stagger-5 { animation: fade-up 1s ease-out 0.6s forwards; opacity: 0; }
+
+/* Animations for Dashboard exact replication */
+@keyframes pulse-scale {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+}
+.animate-pulse-scale { animation: pulse-scale 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+@keyframes ring-fill-100 {
+    0% { stroke-dasharray: 0, 100; }
+    100% { stroke-dasharray: 78, 100; }
+}
+.animate-ring-100 { animation: ring-fill-100 1.5s ease-out forwards; }

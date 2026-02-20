@@ -64,6 +64,9 @@ export default function InvestorMatches() {
             <option value="FinTech">FinTech</option>
             <option value="HealthTech">HealthTech</option>
             <option value="SaaS">SaaS</option>
+            <option value="AI">AI</option>
+            <option value="E-commerce">E-commerce</option>
+            <option value="Cybersecurity">Cybersecurity</option>
           </select>
           <label className="font-body text-sm block mb-2">Stage</label>
           <select
@@ -72,7 +75,6 @@ export default function InvestorMatches() {
             onChange={(e) => setStage(e.target.value)}
           >
             <option value="">All</option>
-            <option value="Idea">Idea</option>
             <option value="MVP">MVP</option>
             <option value="Early Revenue">Early Revenue</option>
             <option value="Scaling">Scaling</option>
