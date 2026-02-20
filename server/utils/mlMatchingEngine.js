@@ -375,7 +375,17 @@ function computeFallbackScore(startup, investor) {
     score = 10 // Base compatibility score
   }
 
-  return Math.min(100, score)
+  // Add a small deterministic jitter so fallback scores aren't all identical
+  const key = `${startup.id || startup.userId || ''}-${investor.id || investor.userId || ''}`
+  let hash = 0
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash * 31 + key.charCodeAt(i)) >>> 0
+  }
+  // noise in [-8, +8]
+  const noise = (hash % 17) - 8
+  const jittered = score + noise
+
+  return Math.max(0, Math.min(100, jittered))
 }
 
 /**

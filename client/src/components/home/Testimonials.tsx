@@ -1,4 +1,3 @@
-import React from 'react';
 import { Icon } from '@iconify/react';
 
 export const Testimonials = () => {
@@ -14,7 +13,7 @@ export const Testimonials = () => {
                         96% Match
                     </div>
                     <p className="font-display italic text-[1.25rem] lg:text-[1.375rem] text-[#e8c9a0] leading-[1.6] mb-8 mt-6">
-                        "We had 3 investor meetings in the first week. Nexus understood what we needed before we even explained it."
+                        "We had 3 investor meetings in the first week. VEGA understood what we needed before we even explained it."
                     </p>
                     <div>
                         <span className="block text-[0.875rem] text-white font-medium">Aarav Sharma</span>

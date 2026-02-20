@@ -2,18 +2,20 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useAuthStore } from '../../store/authStore';
 import { authApi } from '../../api/endpoints';
+import { NotificationBell } from '../ui/NotificationBell';
+import { useWebSocket } from '../../hooks/useWebSocket';
 
 const navStartup = [
   { to: '/startup/dashboard', icon: 'solar:widget-linear', label: 'Dashboard' },
   { to: '/startup/matches', icon: 'solar:users-group-rounded-linear', label: 'Matches' },
   { to: '/startup/matches?saved=1', icon: 'solar:bookmark-linear', label: 'Saved' },
-  { to: '/startup/requests', icon: 'solar:chat-round-line-linear', label: 'Requests', hasIndicator: true },
+  { to: '/startup/requests', icon: 'solar:chat-round-line-linear', label: 'Requests' },
 ];
 
 const navInvestor = [
   { to: '/investor/dashboard', icon: 'solar:widget-linear', label: 'Dashboard' },
   { to: '/investor/matches', icon: 'solar:users-group-rounded-linear', label: 'Matches' },
-  { to: '/investor/requests', icon: 'solar:chat-round-line-linear', label: 'Requests', hasIndicator: true },
+  { to: '/investor/requests', icon: 'solar:chat-round-line-linear', label: 'Requests' },
 ];
 
 export function Sidebar() {
@@ -21,6 +23,9 @@ export function Sidebar() {
   const navigate = useNavigate();
   const navItems = user?.role === 'startup' ? navStartup : navInvestor;
   const profileLink = user?.role === 'startup' ? '/startup/profile/edit' : '/investor/profile/edit';
+
+  // Connect WebSocket at the app level (Sidebar is always mounted for auth'd users)
+  useWebSocket();
 
   const handleLogout = async () => {
     try {
@@ -34,7 +39,7 @@ export function Sidebar() {
     <nav className="fixed bottom-0 w-full h-16 bg-[#f7f4f0] border-t border-[#e8e3dc] z-30 flex flex-row justify-around items-center md:top-0 md:left-0 md:w-[4.5rem] md:h-screen md:flex-col md:justify-start md:border-t-0 md:border-r md:py-5 transition-all duration-300">
       {/* Logo */}
       <NavLink to="/" className="hidden md:flex flex-col items-center justify-center mb-6 select-none group">
-        <span className="font-display text-xl tracking-tighter font-semibold text-[#3e3530] group-hover:text-[#d4a574] transition-colors">FB</span>
+        <img src="/logo_2.jpeg" alt="VEGA" className="w-8 h-8 rounded-lg object-cover group-hover:scale-110 transition-transform" />
       </NavLink>
 
       {/* Main Nav */}
@@ -52,11 +57,11 @@ export function Sidebar() {
           >
             <Icon icon={item.icon} className="text-[1.2rem]" strokeWidth="1.5" />
             <span className="text-[0.6rem] font-medium leading-none tracking-wide hidden md:block">{item.label}</span>
-            {item.hasIndicator && (
-              <span className="absolute top-1.5 right-2 md:top-1.5 md:right-3 w-2 h-2 rounded-full bg-[#d4a574]"></span>
-            )}
           </NavLink>
         ))}
+
+        {/* Notification Bell */}
+        <NotificationBell />
       </div>
 
       {/* Bottom section — Profile, Logout */}

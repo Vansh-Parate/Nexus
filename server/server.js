@@ -4,6 +4,8 @@ import cookieParser from 'cookie-parser'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
+import { createServer } from 'http'
+import { setupWebSocket } from './websocket.js'
 import authRoutes from './routes/auth.js'
 import matchesRoutes from './routes/matches.js'
 import startupsRoutes from './routes/startups.js'
@@ -14,6 +16,7 @@ import savedRoutes from './routes/saved.js'
 import pitchRoutes from './routes/pitch.js'
 import matchScoreRoutes from './routes/matchScore.js'
 import dashboardRoutes from './routes/dashboard.js'
+import notificationsRoutes from './routes/notifications.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -51,9 +54,15 @@ app.use('/api/match-score', matchScoreRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/saved', savedRoutes)
 app.use('/api/pitch', pitchRoutes)
+app.use('/api/notifications', notificationsRoutes)
 
 app.get('/api/health', (req, res) => res.json({ ok: true }))
 
-app.listen(PORT, () => {
+// Create HTTP server and attach WebSocket
+const server = createServer(app)
+setupWebSocket(server)
+
+server.listen(PORT, () => {
   console.log(`VEGA API running at http://localhost:${PORT}`)
+  console.log(`WebSocket available at ws://localhost:${PORT}/ws`)
 })

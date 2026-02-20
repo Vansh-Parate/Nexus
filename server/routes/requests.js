@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { authMiddleware } from '../middleware/authMiddleware.js'
 import { sendPitchEmail } from '../utils/mailer.js'
+import { notifyUser } from '../websocket.js'
 
 const prisma = new PrismaClient()
 const router = Router()
@@ -19,18 +20,18 @@ router.get('/', async (req, res) => {
 
   const sent = fromId
     ? await prisma.connectionRequest.findMany({
-        where: role === 'startup' ? { fromStartupId: fromId } : { fromInvestorId: fromId },
-        include: { startupReceiver: true, investorReceiver: true },
-      })
+      where: role === 'startup' ? { fromStartupId: fromId } : { fromInvestorId: fromId },
+      include: { startupReceiver: true, investorReceiver: true },
+    })
     : []
   const received = toId
     ? await prisma.connectionRequest.findMany({
-        where: role === 'startup' ? { toStartupId: toId } : { toInvestorId: toId },
-        include: {
-          startupSender: { select: { id: true, startupName: true, founderName: true, sector: true, pitch: true, pitchDeckUrl: true } },
-          investorSender: true,
-        },
-      })
+      where: role === 'startup' ? { toStartupId: toId } : { toInvestorId: toId },
+      include: {
+        startupSender: { select: { id: true, startupName: true, founderName: true, sector: true, pitch: true, pitchDeckUrl: true } },
+        investorSender: true,
+      },
+    })
     : []
 
   res.json({ sent, received, accepted: [] })
@@ -50,6 +51,8 @@ router.post('/', async (req, res) => {
 
   let startupForEmail = null
   let investorForEmail = null
+  let recipientUserId = null
+  let senderName = null
 
   if (role === 'startup') {
     const startup = await prisma.startup.findUnique({
@@ -59,23 +62,33 @@ router.post('/', async (req, res) => {
     if (!startup) return res.status(400).json({ message: 'Startup profile not found' })
     fromStartupId = startup.id
     startupForEmail = startup
+    senderName = startup.startupName || startup.user?.name || 'A startup'
     if (toRole === 'investor') {
       const inv = await prisma.investor.findUnique({
         where: { id: toId },
-        include: { user: { select: { email: true, name: true } } },
+        include: { user: { select: { id: true, email: true, name: true } } },
       })
       if (!inv) return res.status(404).json({ message: 'Investor not found' })
       toInvestorId = inv.id
       investorForEmail = inv
+      recipientUserId = inv.user?.id || inv.userId
     }
   } else {
-    const investor = await prisma.investor.findUnique({ where: { userId: fromUserId } })
+    const investor = await prisma.investor.findUnique({
+      where: { userId: fromUserId },
+      include: { user: { select: { id: true, name: true } } },
+    })
     if (!investor) return res.status(400).json({ message: 'Investor profile not found' })
     fromInvestorId = investor.id
+    senderName = investor.fullName || investor.user?.name || 'An investor'
     if (toRole === 'startup') {
-      const st = await prisma.startup.findUnique({ where: { id: toId } })
+      const st = await prisma.startup.findUnique({
+        where: { id: toId },
+        include: { user: { select: { id: true } } },
+      })
       if (!st) return res.status(404).json({ message: 'Startup not found' })
       toStartupId = st.id
+      recipientUserId = st.user?.id || st.userId
     }
   }
 
@@ -100,6 +113,28 @@ router.post('/', async (req, res) => {
       })
     }
     return res.status(500).json({ message: 'Failed to send pitch. Try again.' })
+  }
+
+  // ── Create notification for recipient & push via WebSocket ──
+  if (recipientUserId) {
+    try {
+      const notification = await prisma.notification.create({
+        data: {
+          userId: recipientUserId,
+          type: 'new_request',
+          title: 'New Connection Request',
+          message: `${senderName} sent you a connection request.`,
+          metadata: { requestId: created.id, fromRole: role, fromName: senderName },
+        },
+      })
+
+      notifyUser(recipientUserId, {
+        type: 'new_request',
+        notification,
+      })
+    } catch (err) {
+      console.error('Failed to create notification:', err)
+    }
   }
 
   // Fire-and-forget email; do not block response on SMTP errors
@@ -139,6 +174,52 @@ router.post('/:id/accept', async (req, res) => {
     where: { id: req.params.id },
     data: { status: 'accepted' },
   })
+
+  // ── Notify the sender about acceptance ──
+  try {
+    let senderUserId = null
+    let accepterName = null
+
+    if (request.fromStartupId) {
+      const startup = await prisma.startup.findUnique({ where: { id: request.fromStartupId }, include: { user: { select: { id: true } } } })
+      senderUserId = startup?.user?.id || startup?.userId
+    }
+    if (request.fromInvestorId) {
+      const investor = await prisma.investor.findUnique({ where: { id: request.fromInvestorId }, include: { user: { select: { id: true } } } })
+      senderUserId = investor?.user?.id || investor?.userId
+    }
+
+    if (myStartup) accepterName = myStartup.startupName || 'A startup'
+    if (myInvestor) accepterName = myInvestor.fullName || 'An investor'
+
+    if (senderUserId) {
+      const notification = await prisma.notification.create({
+        data: {
+          userId: senderUserId,
+          type: 'request_accepted',
+          title: 'Request Accepted!',
+          message: `${accepterName} accepted your connection request.`,
+          metadata: { requestId: request.id, status: 'accepted', acceptedBy: accepterName },
+        },
+      })
+
+      notifyUser(senderUserId, {
+        type: 'request_accepted',
+        notification,
+        requestId: request.id,
+      })
+    }
+  } catch (err) {
+    console.error('Failed to create acceptance notification:', err)
+  }
+
+  // Also notify the receiver themselves (for real-time UI update on requests page)
+  notifyUser(req.userId, {
+    type: 'request_status_changed',
+    requestId: request.id,
+    status: 'accepted',
+  })
+
   res.json({ ok: true })
 })
 
@@ -153,6 +234,52 @@ router.post('/:id/decline', async (req, res) => {
     where: { id: req.params.id },
     data: { status: 'declined' },
   })
+
+  // ── Notify the sender about decline ──
+  try {
+    let senderUserId = null
+    let declinerName = null
+
+    if (request.fromStartupId) {
+      const startup = await prisma.startup.findUnique({ where: { id: request.fromStartupId }, include: { user: { select: { id: true } } } })
+      senderUserId = startup?.user?.id || startup?.userId
+    }
+    if (request.fromInvestorId) {
+      const investor = await prisma.investor.findUnique({ where: { id: request.fromInvestorId }, include: { user: { select: { id: true } } } })
+      senderUserId = investor?.user?.id || investor?.userId
+    }
+
+    if (myStartup) declinerName = myStartup.startupName || 'A startup'
+    if (myInvestor) declinerName = myInvestor.fullName || 'An investor'
+
+    if (senderUserId) {
+      const notification = await prisma.notification.create({
+        data: {
+          userId: senderUserId,
+          type: 'request_declined',
+          title: 'Request Declined',
+          message: `${declinerName} declined your connection request.`,
+          metadata: { requestId: request.id, status: 'declined', declinedBy: declinerName },
+        },
+      })
+
+      notifyUser(senderUserId, {
+        type: 'request_declined',
+        notification,
+        requestId: request.id,
+      })
+    }
+  } catch (err) {
+    console.error('Failed to create decline notification:', err)
+  }
+
+  // Notify receiver for UI update
+  notifyUser(req.userId, {
+    type: 'request_status_changed',
+    requestId: request.id,
+    status: 'declined',
+  })
+
   res.json({ ok: true })
 })
 

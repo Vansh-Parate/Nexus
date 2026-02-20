@@ -9,17 +9,20 @@ const router = Router()
 
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const { sector, stage, ticketMin, ticketMax, useML = 'true' } = req.query
+    const { sector, stage, ticketMin, ticketMax, useML = 'true', page = '1', pageSize = '9' } = req.query
     const userId = req.userId
     const role = req.role
     const useMLRanking = useML === 'true' || useML === true
+
+    const currentPage = Math.max(1, parseInt(page) || 1)
+    const limit = Math.min(50, Math.max(1, parseInt(pageSize) || 9))
 
     if (role === 'startup') {
       const startup = await prisma.startup.findUnique({
         where: { userId },
         include: { user: { select: { name: true } } },
       })
-      if (!startup) return res.json({ matches: [] })
+      if (!startup) return res.json({ matches: [], totalCount: 0, totalPages: 0, page: currentPage, pageSize: limit, hasMore: false })
 
       let investors = await prisma.investor.findMany({
         include: { user: { select: { id: true, name: true } } },
@@ -30,11 +33,16 @@ router.get('/', authMiddleware, async (req, res) => {
       if (ticketMax != null) investors = investors.filter((i) => i.ticketMin <= Number(ticketMax))
 
       // Use ML ranking if enabled, otherwise fallback
-      const ranked = useMLRanking 
+      const ranked = useMLRanking
         ? await rankInvestorsForStartupML(startup, investors)
         : rankInvestorsForStartup(startup, investors)
 
-      const matches = ranked.map((inv) => ({
+      const totalCount = ranked.length
+      const totalPages = Math.ceil(totalCount / limit)
+      const offset = (currentPage - 1) * limit
+      const paginated = ranked.slice(offset, offset + limit)
+
+      const matches = paginated.map((inv) => ({
         id: inv.id,
         userId: inv.userId,
         name: inv.user?.name ?? inv.fullName,
@@ -47,14 +55,22 @@ router.get('/', authMiddleware, async (req, res) => {
         matchScore: inv.matchScore,
         scoreSource: inv.scoreSource || 'simple',
       }))
-      return res.json({ matches, rankingMethod: useMLRanking ? 'ml' : 'simple' })
+      return res.json({
+        matches,
+        rankingMethod: useMLRanking ? 'ml' : 'simple',
+        page: currentPage,
+        pageSize: limit,
+        totalCount,
+        totalPages,
+        hasMore: currentPage < totalPages,
+      })
     }
 
     if (role === 'investor') {
       const investor = await prisma.investor.findUnique({
         where: { userId },
       })
-      if (!investor) return res.json({ matches: [] })
+      if (!investor) return res.json({ matches: [], totalCount: 0, totalPages: 0, page: currentPage, pageSize: limit, hasMore: false })
 
       let startups = await prisma.startup.findMany({
         include: { user: { select: { id: true } } },
@@ -69,7 +85,12 @@ router.get('/', authMiddleware, async (req, res) => {
         ? await rankStartupsForInvestorML(investor, startups)
         : rankStartupsForInvestor(investor, startups)
 
-      const matches = ranked.map((s) => ({
+      const totalCount = ranked.length
+      const totalPages = Math.ceil(totalCount / limit)
+      const offset = (currentPage - 1) * limit
+      const paginated = ranked.slice(offset, offset + limit)
+
+      const matches = paginated.map((s) => ({
         id: s.id,
         userId: s.userId,
         startupName: s.startupName,
@@ -82,10 +103,18 @@ router.get('/', authMiddleware, async (req, res) => {
         matchScore: s.matchScore,
         scoreSource: s.scoreSource || 'simple',
       }))
-      return res.json({ matches, rankingMethod: useMLRanking ? 'ml' : 'simple' })
+      return res.json({
+        matches,
+        rankingMethod: useMLRanking ? 'ml' : 'simple',
+        page: currentPage,
+        pageSize: limit,
+        totalCount,
+        totalPages,
+        hasMore: currentPage < totalPages,
+      })
     }
 
-    res.json({ matches: [] })
+    res.json({ matches: [], totalCount: 0, totalPages: 0, page: currentPage, pageSize: limit, hasMore: false })
   } catch (e) {
     console.error('Matches route error:', e)
     res.status(500).json({ message: 'Failed to fetch matches' })

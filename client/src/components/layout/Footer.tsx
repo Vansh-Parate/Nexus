@@ -7,8 +7,11 @@ export function Footer() {
       <div className="max-w-[1280px] mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="font-display text-xl font-bold">Startup India Matchmaking</h3>
-            <p className="font-body text-sm mt-2 opacity-90">
+            <div className="flex items-center gap-2 mb-2">
+              <img src="/logo_2.jpeg" alt="VEGA Logo" className="w-5 h-5 rounded object-cover" />
+              <h3 className="font-display text-xl font-bold">VEGA</h3>
+            </div>
+            <p className="font-body text-sm opacity-90">
               India&apos;s most structured startup–investor discovery engine.
             </p>
           </div>
@@ -32,7 +35,7 @@ export function Footer() {
         </div>
         <div className="mt-8 pt-8 border-t border-cream/20">
           <p className="font-body text-xs text-center opacity-80">
-            © 2025 Startup India Matchmaking Initiative
+            © {new Date().getFullYear()} VEGA — Startup India Initiative
           </p>
         </div>
       </div>

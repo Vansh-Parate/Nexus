@@ -54,3 +54,9 @@ export const pitchApi = {
   generate: (type?: 'pitch' | 'description' | 'both') =>
     api.post('/pitch/generate', { type: type || 'both' }),
 }
+
+export const notificationsApi = {
+  list: () => api.get('/notifications'),
+  markAllRead: () => api.post('/notifications/mark-all-read'),
+  markRead: (id: string) => api.post(`/notifications/${id}/read`),
+}

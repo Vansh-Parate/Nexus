@@ -191,21 +191,18 @@ export default function Register() {
 
             {role === 'startup' && (
               <>
-                <Select.Root value={form.sector} onValueChange={(v) => setForm((f) => ({ ...f, sector: v }))}>
-                  <Select.Trigger className="w-full font-body text-sm px-3 py-2 border border-border rounded-lg bg-chalk-white inline-flex items-center justify-between">
-                    <Select.Value placeholder="Industry Sector" />
-                    <Select.Icon />
-                  </Select.Trigger>
-                  <Select.Portal>
-                    <Select.Content className="bg-chalk-white border border-border rounded-lg shadow-[var(--shadow-card)]">
-                      {SECTORS.map((s) => (
-                        <Select.Item key={s} value={s} className="font-body px-3 py-2 outline-none focus:bg-warm-sand">
-                          {s}
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Portal>
-                </Select.Root>
+                <select
+                  className="w-full font-body text-sm px-3 py-2 border border-border rounded-lg bg-chalk-white"
+                  value={form.sector}
+                  onChange={(e) => setForm((f) => ({ ...f, sector: e.target.value }))}
+                >
+                  <option value="">Industry Sector</option>
+                  {SECTORS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
                 <div className="flex flex-wrap gap-2">
                   {STAGES.map((s) => (
                     <button
@@ -272,19 +269,27 @@ export default function Register() {
                   <div className="flex gap-2 mt-1">
                     <input
                       type="number"
-                      min="10"
-                      max="1000"
+                      min="0"
                       className="w-full font-body text-sm px-3 py-2 border border-border rounded-lg"
                       value={form.ticketMin}
-                      onChange={(e) => setForm((f) => ({ ...f, ticketMin: Number(e.target.value) || 10 }))}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          ticketMin: e.target.value === '' ? 0 : Number(e.target.value),
+                        }))
+                      }
                     />
                     <input
                       type="number"
-                      min="10"
-                      max="1000"
+                      min="0"
                       className="w-full font-body text-sm px-3 py-2 border border-border rounded-lg"
                       value={form.ticketMax}
-                      onChange={(e) => setForm((f) => ({ ...f, ticketMax: Number(e.target.value) || 500 }))}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          ticketMax: e.target.value === '' ? 0 : Number(e.target.value),
+                        }))
+                      }
                     />
                   </div>
                 </label>

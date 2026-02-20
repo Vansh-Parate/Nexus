@@ -1,6 +1,8 @@
 """
-Explain match score with contributions breakdown.
-Input: { "startup": {...}, "investor": {...} }
+Explain match score with SHAP-based contributions, aligned with the
+`models/contributions (1).ipynb` notebook.
+
+Input:  { "startup": {...}, "investor": {...} }
 Output: { "score": float, "contributions": {...}, "breakdown": {...} }
 """
 import sys
@@ -10,142 +12,180 @@ import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 import joblib
 import numpy as np
+import shap
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SERVER_DIR = os.path.dirname(SCRIPT_DIR)
 ARTIFACTS_DIR = os.path.join(SERVER_DIR, "ml_artifacts")
 
-def explain_match(startup_data, investor_data, model, tfidf, feature_columns):
-    """Get match score with detailed contributions."""
-    input_df = pd.DataFrame([{
-        "startup_industry": startup_data.get("industry", ""),
-        "startup_stage": startup_data.get("stage", ""),
-        "funding_required_lakhs": float(startup_data.get("funding_required", 0)),
-        "investor_pref_industry": investor_data.get("preferred_industry", ""),
-        "investor_pref_stage": investor_data.get("preferred_stage", ""),
-        "investor_ticket_min_lakhs": float(investor_data.get("ticket_min", 0)),
-        "investor_ticket_max_lakhs": float(investor_data.get("ticket_max", 1000)),
-        "startup_desc": startup_data.get("description", "") or "",
-        "investor_desc": investor_data.get("description", "") or investor_data.get("thesis", "") or "",
-    }])
 
-    # Compute idea similarity
-    startup_vec = tfidf.transform(input_df["startup_desc"])
-    investor_vec = tfidf.transform(input_df["investor_desc"])
-    similarity = cosine_similarity(startup_vec, investor_vec)[0][0]
-    input_df["idea_similarity"] = similarity
+def build_feature_row(startup_data, investor_data, tfidf, feature_columns):
+    """Replicate feature building from the contributions notebook."""
+    df = pd.DataFrame(
+        [
+            {
+                "startup_industry": startup_data.get("industry", ""),
+                "startup_stage": startup_data.get("stage", ""),
+                "funding_required_lakhs": float(startup_data.get("funding_required", 0)),
+                "investor_pref_industry": investor_data.get("preferred_industry", ""),
+                "investor_pref_stage": investor_data.get("preferred_stage", ""),
+                "investor_ticket_min_lakhs": float(investor_data.get("ticket_min", 0)),
+                "investor_ticket_max_lakhs": float(investor_data.get("ticket_max", 1000)),
+                "startup_desc": startup_data.get("description", "") or "",
+                "investor_desc": investor_data.get("description", "") or investor_data.get("thesis", "") or "",
+            }
+        ]
+    )
+
+    # Idea similarity
+    s_vec = tfidf.transform(df["startup_desc"])
+    i_vec = tfidf.transform(df["investor_desc"])
+    similarity = cosine_similarity(s_vec, i_vec)[0][0]
+    df["idea_similarity"] = float(similarity)
 
     # Funding fit
-    funding_required = float(input_df["funding_required_lakhs"].iloc[0])
-    ticket_min = float(input_df["investor_ticket_min_lakhs"].iloc[0])
-    ticket_max = float(input_df["investor_ticket_max_lakhs"].iloc[0])
-    funding_fit = (funding_required >= ticket_min) and (funding_required <= ticket_max)
-    input_df["funding_fit"] = int(funding_fit)
-    
-    input_df_clean = input_df.drop(["startup_desc", "investor_desc"], axis=1)
-    input_encoded = pd.get_dummies(input_df_clean)
-    input_aligned = input_encoded.reindex(columns=feature_columns, fill_value=0)
+    df["funding_fit"] = (
+        (df["funding_required_lakhs"] >= df["investor_ticket_min_lakhs"])
+        & (df["funding_required_lakhs"] <= df["investor_ticket_max_lakhs"])
+    ).astype(int)
 
-    # Get prediction
-    score = float(model.predict(input_aligned)[0])
-    
-    # Get feature importances (global from model)
-    feature_importances = model.feature_importances_
-    feature_names = feature_columns
-    
-    # Calculate contributions per feature category
-    contributions = {}
-    
-    # Sector match
-    # Treat empty investor_pref_industry as "no preference" => count as a match
-    startup_industry = input_df["startup_industry"].iloc[0]
-    investor_pref_industry = input_df["investor_pref_industry"].iloc[0]
+    df_clean = df.drop(["startup_desc", "investor_desc"], axis=1)
+    df_encoded = pd.get_dummies(df_clean, drop_first=True)
+    df_aligned = df_encoded.reindex(columns=feature_columns, fill_value=0)
+
+    return df, df_aligned, similarity
+
+
+def explain_match(startup_data, investor_data, model, tfidf, feature_columns):
+    """Get match score with SHAP-based contributions."""
+    # Build aligned feature row
+    raw_df, X_input, similarity = build_feature_row(startup_data, investor_data, tfidf, feature_columns)
+
+    # Model prediction (clamped to 0–100)
+    prediction = float(model.predict(X_input)[0])
+    prediction = float(np.clip(prediction, 0, 100))
+
+    # SHAP values
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(X_input)
+
+    if isinstance(shap_values, list):
+        shap_vals = shap_values[0][0]
+    else:
+        shap_vals = shap_values[0]
+
+    feature_contrib = dict(zip(feature_columns, shap_vals))
+
+    # Aggregate into buckets
+    buckets = {
+        "Industry Fit": 0.0,
+        "Stage Fit": 0.0,
+        "Funding Fit": 0.0,
+        "Idea Similarity": 0.0,
+    }
+
+    for feat, val in feature_contrib.items():
+        f = feat.lower()
+        if "industry" in f:
+            buckets["Industry Fit"] += val
+        elif "stage" in f:
+            buckets["Stage Fit"] += val
+        elif "funding_fit" in f or "funding" in f or "ticket" in f:
+            buckets["Funding Fit"] += val
+        elif "idea_similarity" in f or "similarity" in f:
+            buckets["Idea Similarity"] += val
+
+    total_abs = sum(abs(v) for v in buckets.values()) + 1e-6
+    bucket_pcts = {k: round(100 * abs(v) / total_abs, 1) for k, v in buckets.items()}
+
+    # Map to UI structure, using prediction * percentage as "points"
+    sector_pct = bucket_pcts["Industry Fit"]
+    stage_pct = bucket_pcts["Stage Fit"]
+    funding_pct = bucket_pcts["Funding Fit"]
+    idea_pct = bucket_pcts["Idea Similarity"]
+
+    sector_contrib = round(prediction * sector_pct / 100.0, 1)
+    stage_contrib = round(prediction * stage_pct / 100.0, 1)
+    funding_contrib = round(prediction * funding_pct / 100.0, 1)
+    idea_contrib = round(prediction * idea_pct / 100.0, 1)
+
+    # Booleans for match status (for labels)
+    startup_industry = raw_df["startup_industry"].iloc[0]
+    investor_pref_industry = raw_df["investor_pref_industry"].iloc[0]
     sector_match = (
         (startup_industry and investor_pref_industry and startup_industry == investor_pref_industry)
-        or (startup_industry and not investor_pref_industry)  # investor has no specific sector filter
+        or (startup_industry and not investor_pref_industry)
     )
-    sector_cols = [i for i, col in enumerate(feature_names) if 'industry' in col.lower() and input_aligned.iloc[0, i] > 0]
-    sector_contrib = sum(feature_importances[i] * input_aligned.iloc[0, i] for i in sector_cols) if sector_cols else 0
-    contributions["sector"] = {
-        "match": bool(sector_match),
-        "contribution": round(float(sector_contrib), 2),
-        "startup": startup_industry,
-        "investor": investor_pref_industry or "Any"
-    }
-    
-    # Stage match
-    startup_stage = input_df["startup_stage"].iloc[0]
-    investor_pref_stage = input_df["investor_pref_stage"].iloc[0]
+
+    startup_stage = raw_df["startup_stage"].iloc[0]
+    investor_pref_stage = raw_df["investor_pref_stage"].iloc[0]
     stage_match = (
         (startup_stage and investor_pref_stage and startup_stage == investor_pref_stage)
-        or (startup_stage and not investor_pref_stage)  # no specific stage preference
+        or (startup_stage and not investor_pref_stage)
     )
-    stage_cols = [i for i, col in enumerate(feature_names) if 'stage' in col.lower() and input_aligned.iloc[0, i] > 0]
-    stage_contrib = sum(feature_importances[i] * input_aligned.iloc[0, i] for i in stage_cols) if stage_cols else 0
-    contributions["stage"] = {
-        "match": bool(stage_match),
-        "contribution": round(float(stage_contrib), 2),
-        "startup": startup_stage,
-        "investor": investor_pref_stage or "Any"
+
+    funding_required = float(raw_df["funding_required_lakhs"].iloc[0])
+    ticket_min = float(raw_df["investor_ticket_min_lakhs"].iloc[0])
+    ticket_max = float(raw_df["investor_ticket_max_lakhs"].iloc[0])
+    funding_fit = (funding_required >= ticket_min) and (funding_required <= ticket_max)
+
+    contributions = {
+        "sector": {
+            "match": bool(sector_match),
+            "contribution": float(sector_contrib),
+            "startup": startup_industry,
+            "investor": investor_pref_industry or "Any",
+        },
+        "stage": {
+            "match": bool(stage_match),
+            "contribution": float(stage_contrib),
+            "startup": startup_stage,
+            "investor": investor_pref_stage or "Any",
+        },
+        "funding": {
+            "fit": bool(funding_fit),
+            "contribution": float(funding_contrib),
+            "startup_ask": funding_required,
+            "investor_range": [ticket_min, ticket_max],
+        },
+        "idea_similarity": {
+            "score": round(float(similarity), 3),
+            "contribution": float(idea_contrib),
+            "description": "Semantic similarity between startup description and investor thesis",
+        },
     }
-    
-    # Funding fit
-    funding_cols = [i for i, col in enumerate(feature_names) if 'funding' in col.lower() or 'ticket' in col.lower()]
-    funding_contrib = sum(feature_importances[i] * input_aligned.iloc[0, i] for i in funding_cols) if funding_cols else 0
-    contributions["funding"] = {
-        "fit": bool(funding_fit),
-        "contribution": round(float(funding_contrib), 2),
-        "startup_ask": float(input_df["funding_required_lakhs"].iloc[0]),
-        "investor_range": [float(input_df["investor_ticket_min_lakhs"].iloc[0]), float(input_df["investor_ticket_max_lakhs"].iloc[0])]
-    }
-    
-    # Idea similarity
-    idea_cols = [i for i, col in enumerate(feature_names) if 'similarity' in col.lower() or 'idea' in col.lower()]
-    idea_contrib = sum(feature_importances[i] * input_aligned.iloc[0, i] for i in idea_cols) if idea_cols else 0
-    contributions["idea_similarity"] = {
-        "score": round(float(similarity), 3),
-        "contribution": round(float(idea_contrib), 2),
-        "description": "Semantic similarity between startup description and investor thesis"
-    }
-    
-    # Breakdown summary
+
     breakdown = {
-        "total_score": round(score, 2),
-        "factors": [
-            {"name": "Sector Match", "value": contributions["sector"]["match"], "impact": contributions["sector"]["contribution"]},
-            {"name": "Stage Match", "value": contributions["stage"]["match"], "impact": contributions["stage"]["contribution"]},
-            {"name": "Funding Fit", "value": contributions["funding"]["fit"], "impact": contributions["funding"]["contribution"]},
-            {"name": "Idea Similarity", "value": f"{contributions['idea_similarity']['score']:.1%}", "impact": contributions["idea_similarity"]["contribution"]}
-        ],
+        "total_score": round(prediction, 2),
+        "factors": [],
         "strengths": [],
-        "weaknesses": []
+        "weaknesses": [],
     }
-    
-    # Identify strengths and weaknesses
+
     if contributions["sector"]["match"]:
         breakdown["strengths"].append("Sector alignment")
     else:
         breakdown["weaknesses"].append("Sector mismatch")
-    
+
     if contributions["stage"]["match"]:
         breakdown["strengths"].append("Stage alignment")
     else:
         breakdown["weaknesses"].append("Stage mismatch")
-    
+
     if contributions["funding"]["fit"]:
         breakdown["strengths"].append("Funding range fit")
     else:
         breakdown["weaknesses"].append("Funding ask outside investor range")
-    
+
     if similarity > 0.3:
         breakdown["strengths"].append("Strong idea similarity")
     elif similarity < 0.1:
         breakdown["weaknesses"].append("Low idea similarity")
-    
+
     return {
-        "score": round(score, 2),
+        "score": round(prediction, 2),
         "contributions": contributions,
-        "breakdown": breakdown
+        "breakdown": breakdown,
     }
 
 def main():

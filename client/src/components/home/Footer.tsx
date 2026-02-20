@@ -1,4 +1,3 @@
-import React from 'react';
 import { Icon } from '@iconify/react';
 
 export const Footer = () => {
@@ -9,10 +8,8 @@ export const Footer = () => {
                 {/* Col 1 */}
                 <div className="lg:pr-8">
                     <div className="flex items-center gap-2 mb-4">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2L20.6603 7V17L12 22L3.33975 17V7L12 2Z" fill="#d4a574" />
-                        </svg>
-                        <span className="font-display italic font-semibold text-[1.25rem] tracking-tight">NEXUS</span>
+                        <img src="/logo_2.jpeg" alt="VEGA Logo" className="w-6 h-6 rounded object-cover" />
+                        <span className="font-display italic font-semibold text-[1.25rem] tracking-tight">VEGA</span>
                     </div>
                     <p className="text-[0.875rem] text-[#9b918a] font-light leading-relaxed mb-6">The intelligent matchmaking portal powered by the Startup India Initiative. Connecting potential with capital.</p>
                     <div className="flex gap-4 text-[#9b918a]">
@@ -60,7 +57,7 @@ export const Footer = () => {
 
             {/* Bottom Bar */}
             <div className="max-w-[80rem] mx-auto border-t border-white/10 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-[0.75rem] text-[#9b918a] font-light">
-                <span>&copy; 2024 Nexus Matchmaking Portal. All rights reserved.</span>
+                <span>&copy; {new Date().getFullYear()} VEGA Matchmaking Portal. All rights reserved.</span>
                 <span>Made under Startup India Initiative 🇮🇳</span>
             </div>
         </footer>
