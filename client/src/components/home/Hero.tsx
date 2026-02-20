@@ -89,7 +89,10 @@ export const Hero = () => {
                                 </div>
                             </div>
 
-                            <div className="orbit-card-wrapper" style={{ transform: 'translate(-50%, -50%) rotate(180deg)' }}>
+                            <div
+                                className="orbit-card-wrapper"
+                                style={{ transform: 'translate(-50%, -50%)' }}
+                            >
                                 <div className="orbit-card orbit-card-reverse glass-card px-4 py-3 rounded-lg flex items-center gap-3 border-l-4 border-l-[#d89b6a]" style={{ animationDuration: '36s' }}>
                                     <div className="w-8 h-8 rounded-full bg-[#f7f4f0] flex items-center justify-center text-[#d89b6a]">
                                         <Icon icon="solar:heart-pulse-linear" />

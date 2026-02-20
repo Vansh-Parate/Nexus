@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { NeoButton } from '../components/ui/NeoButton'
 import { MatchingIllustration } from '../assets/illustrations/MatchingIllustration'
+import { authApi } from '../api/endpoints'
 
 const SECTORS = ['AgriTech', 'FinTech', 'EdTech', 'CleanEnergy', 'HealthTech', 'D2C', 'DeepTech', 'GovTech', 'SaaS', 'Mobility']
 const STAGES = ['Idea', 'MVP', 'Early Revenue', 'Scaling']
@@ -65,17 +66,10 @@ export default function Register() {
             preferredStages: form.preferredStages,
             portfolioSize: form.portfolioSize ? Number(form.portfolioSize) : undefined,
           }
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        credentials: 'include',
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.message || 'Registration failed')
+      await authApi.register(payload)
       window.location.href = role === 'startup' ? '/startup/profile/edit' : '/investor/dashboard'
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed')
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || 'Registration failed')
     } finally {
       setLoading(false)
     }

@@ -4,6 +4,7 @@ import { motion } from 'motion/react'
 import * as Tabs from '@radix-ui/react-tabs'
 import { NeoButton } from '../components/ui/NeoButton'
 import { useAuthStore } from '../store/authStore'
+import { authApi } from '../api/endpoints'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -19,14 +20,8 @@ export default function Login() {
     setError('')
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, role }),
-        credentials: 'include',
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.message || 'Login failed')
+      const res = await authApi.login(email, password, role)
+      const data = res.data
       setUser({
         id: data.user?.id ?? '1',
         email: data.user?.email ?? email,
@@ -34,8 +29,8 @@ export default function Login() {
         role,
       })
       navigate(role === 'startup' ? '/startup/dashboard' : '/investor/dashboard')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || 'Login failed')
     } finally {
       setLoading(false)
     }

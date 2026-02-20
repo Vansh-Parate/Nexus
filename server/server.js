@@ -25,19 +25,32 @@ const PORT = process.env.PORT || 3001
 // CORS configuration - allow localhost for dev and production frontend URL
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5174',
   process.env.FRONTEND_URL,
 ].filter(Boolean) // Remove undefined values
 
+// In production (Render), be more permissive with CORS to allow frontend
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER
+
 app.use(cors({ 
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin || allowedOrigins.includes(origin)) {
+    // In production, allow all origins (Render frontend can be on different domains)
+    // In development, only allow specific origins
+    if (isProduction) {
       callback(null, true)
     } else {
-      callback(new Error('Not allowed by CORS'))
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
     }
   },
-  credentials: true 
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }))
 app.use(cookieParser())
 app.use(express.json())
