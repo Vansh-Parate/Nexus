@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import { authApi } from '../../api/endpoints';
 import { NotificationBell } from '../ui/NotificationBell';
 import { useWebSocket } from '../../hooks/useWebSocket';
+import toast from 'react-hot-toast';
 
 const navStartup = [
   { to: '/startup/dashboard', icon: 'solar:widget-linear', label: 'Dashboard' },
@@ -25,7 +26,27 @@ export function Sidebar() {
   const profileLink = user?.role === 'startup' ? '/startup/profile/edit' : '/investor/profile/edit';
 
   // Connect WebSocket at the app level (Sidebar is always mounted for auth'd users)
-  useWebSocket();
+  useWebSocket((msg) => {
+    // Show toast for important events globally
+    if (msg.notification) {
+      const { type, message } = msg.notification
+      if (type === 'new_request') {
+        toast(message, {
+          icon: '📩',
+          style: { background: '#fffbf8', color: '#3e3530', border: '1px solid #e8e3dc' },
+        })
+      } else if (type === 'request_accepted') {
+        toast.success(message, {
+          style: { background: '#fffbf8', color: '#3e3530', border: '1px solid #7a9b76' },
+        })
+      } else if (type === 'request_declined') {
+        toast(message, {
+          icon: '❌',
+          style: { background: '#fffbf8', color: '#3e3530', border: '1px solid #c77567' },
+        })
+      }
+    }
+  });
 
   const handleLogout = async () => {
     try {

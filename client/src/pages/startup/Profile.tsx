@@ -6,6 +6,7 @@ import { NeoButton } from '../../components/ui/NeoButton'
 import { Badge } from '../../components/ui/Badge'
 import { MatchScoreRing } from '../../components/ui/MatchScoreRing'
 import { PdfViewerModal } from '../../components/ui/PdfViewerModal'
+import { Sidebar } from '../../components/layout/Sidebar'
 import { api } from '../../api/client'
 import { useAuthStore } from '../../store/authStore'
 
@@ -78,7 +79,7 @@ export default function StartupProfile() {
     }
   }
 
-  return (
+  const content = (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="min-h-screen bg-cream">
       <div className="h-[200px] w-full bg-warm-sand" />
       <div className="max-w-[1280px] mx-auto px-6 -mt-24 relative">
@@ -260,4 +261,17 @@ export default function StartupProfile() {
       {pdfViewUrl && <PdfViewerModal src={pdfViewUrl} onClose={() => setPdfViewUrl(null)} />}
     </motion.div>
   )
+
+  if (user?.role === 'investor') {
+    return (
+      <div className="min-h-screen flex">
+        <Sidebar />
+        <main className="flex-1 md:ml-[4.5rem] overflow-auto">
+          {content}
+        </main>
+      </div>
+    )
+  }
+
+  return content
 }

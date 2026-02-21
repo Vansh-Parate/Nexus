@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Icon } from '@iconify/react'
+import { useNavigate } from 'react-router-dom'
 import { useNotificationStore, type Notification } from '../../store/notificationStore'
+import { useAuthStore } from '../../store/authStore'
 import { api } from '../../api/client'
 
 function timeAgo(dateStr: string): string {
@@ -56,17 +58,17 @@ function notificationBgColor(type: string) {
     }
 }
 
-function NotificationItem({ notification, onRead }: { notification: Notification; onRead: (id: string) => void }) {
+function NotificationItem({ notification, onRead }: { notification: Notification; onRead: (notification: Notification) => void }) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
-            onClick={() => !notification.read && onRead(notification.id)}
+            onClick={() => onRead(notification)}
             className={`flex items-start gap-3 p-3.5 rounded-xl cursor-pointer transition-all duration-200 border ${notification.read
-                    ? 'bg-transparent border-transparent hover:bg-[#f7f4f0]'
-                    : 'bg-[#fffbf8] border-[#e8e3dc] hover:bg-[#f7f4f0] shadow-[0_1px_3px_rgba(62,53,48,0.06)]'
+                ? 'bg-transparent border-transparent hover:bg-[#f7f4f0]'
+                : 'bg-[#fffbf8] border-[#e8e3dc] hover:bg-[#f7f4f0] shadow-[0_1px_3px_rgba(62,53,48,0.06)]'
                 }`}
         >
             <div className={`w-9 h-9 rounded-lg ${notificationBgColor(notification.type)} flex items-center justify-center shrink-0 mt-0.5`}>
@@ -92,8 +94,10 @@ function NotificationItem({ notification, onRead }: { notification: Notification
 
 export function NotificationBell() {
     const { notifications, unreadCount, isModalOpen, setNotifications, setUnreadCount, markAllRead, markRead, toggleModal, closeModal } = useNotificationStore()
+    const { user } = useAuthStore()
     const modalRef = useRef<HTMLDivElement>(null)
     const bellRef = useRef<HTMLButtonElement>(null)
+    const navigate = useNavigate()
 
     // Fetch notifications on mount
     useEffect(() => {
@@ -127,9 +131,17 @@ export function NotificationBell() {
         api.post('/notifications/mark-all-read').catch(() => { })
     }
 
-    const handleRead = (id: string) => {
-        markRead(id)
-        api.post(`/notifications/${id}/read`).catch(() => { })
+    const handleRead = (notification: Notification) => {
+        if (!notification.read) {
+            markRead(notification.id)
+            api.post(`/notifications/${notification.id}/read`).catch(() => { })
+        }
+
+        // Navigate based on notification type/metadata
+        if (notification.type.includes('request') && user?.role) {
+            closeModal()
+            navigate(`/${user.role}/requests`)
+        }
     }
 
     return (
@@ -139,8 +151,8 @@ export function NotificationBell() {
                 ref={bellRef}
                 onClick={toggleModal}
                 className={`relative flex flex-col items-center justify-center gap-0.5 w-full py-2.5 rounded-xl transition-all duration-200 ${isModalOpen
-                        ? 'bg-[#e8e3dc] text-[#d4a574]'
-                        : 'text-[#9b918a] hover:bg-[#e8e3dc]/50 hover:text-[#3e3530]'
+                    ? 'bg-[#e8e3dc] text-[#d4a574]'
+                    : 'text-[#9b918a] hover:bg-[#e8e3dc]/50 hover:text-[#3e3530]'
                     }`}
                 aria-label="Notifications"
             >

@@ -8,7 +8,6 @@ import { Badge } from '../../components/ui/Badge'
 import { Sidebar } from '../../components/layout/Sidebar'
 import { api } from '../../api/client'
 import { useWebSocket } from '../../hooks/useWebSocket'
-import toast from 'react-hot-toast'
 
 export default function StartupRequests() {
   const [data, setData] = useState<{ sent: unknown[]; received: unknown[] }>({ sent: [], received: [] })
@@ -37,25 +36,6 @@ export default function StartupRequests() {
       if (reqId) {
         setRealtimeHighlight(reqId)
         setTimeout(() => setRealtimeHighlight(null), 3000)
-      }
-
-      // Show toast for important events
-      if (msg.type === 'new_request' && msg.notification) {
-        toast(msg.notification.message, {
-          icon: '📩',
-          style: { background: '#fffbf8', color: '#3e3530', border: '1px solid #e8e3dc' },
-        })
-      }
-      if (msg.type === 'request_accepted' && msg.notification) {
-        toast.success(msg.notification.message, {
-          style: { background: '#fffbf8', color: '#3e3530', border: '1px solid #7a9b76' },
-        })
-      }
-      if (msg.type === 'request_declined' && msg.notification) {
-        toast(msg.notification.message, {
-          icon: '❌',
-          style: { background: '#fffbf8', color: '#3e3530', border: '1px solid #c77567' },
-        })
       }
     }
   }, [refresh])
