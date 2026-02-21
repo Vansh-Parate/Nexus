@@ -8,8 +8,8 @@ export const Footer = () => {
                 {/* Col 1 */}
                 <div className="lg:pr-8">
                     <div className="flex items-center gap-2 mb-4">
-                        <img src="/logo_2.jpeg" alt="VEGA Logo" className="w-6 h-6 rounded object-cover" />
-                        <span className="font-display italic font-semibold text-[1.25rem] tracking-tight">VEGA</span>
+                        <img src="/logo.jpeg" alt="NEXUS Logo" className="w-6 h-6 rounded object-cover" />
+                        <span className="font-display italic font-semibold text-[1.25rem] tracking-tight">NEXUS</span>
                     </div>
                     <p className="text-[0.875rem] text-[#9b918a] font-light leading-relaxed mb-6">The intelligent matchmaking portal powered by the Startup India Initiative. Connecting potential with capital.</p>
                     <div className="flex gap-4 text-[#9b918a]">
@@ -57,7 +57,7 @@ export const Footer = () => {
 
             {/* Bottom Bar */}
             <div className="max-w-[80rem] mx-auto border-t border-white/10 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-[0.75rem] text-[#9b918a] font-light">
-                <span>&copy; {new Date().getFullYear()} VEGA Matchmaking Portal. All rights reserved.</span>
+                <span>&copy; {new Date().getFullYear()} NEXUS Matchmaking Portal. All rights reserved.</span>
                 <span>Made under Startup India Initiative 🇮🇳</span>
             </div>
         </footer>

@@ -45,7 +45,7 @@ export async function sendPitchEmail({
   lines.push(`Hi ${investorName || 'there'},`)
   lines.push('')
   lines.push(
-    `${startupName || 'A startup'} in ${sector || 'your focus area'} has sent you a pitch via VEGA.`
+    `${startupName || 'A startup'} in ${sector || 'your focus area'} has sent you a pitch via NEXUS.`
   )
   if (founderName) {
     lines.push(`Founder: ${founderName}`)
@@ -67,7 +67,7 @@ export async function sendPitchEmail({
     lines.push(message)
     lines.push('')
   }
-  lines.push('Log in to VEGA to review the full details.')
+  lines.push('Log in to NEXUS to review the full details.')
 
   const text = lines.join('\n')
 

@@ -108,7 +108,7 @@ export default function SendPitch() {
     return (
       <div className="min-h-screen flex">
         <Sidebar />
-        <main className="flex-1 pl-[240px] flex items-center justify-center">
+        <main className="flex-1 md:ml-[4.5rem] pb-20 md:pb-0 flex items-center justify-center">
           <p className="font-body text-forest-ink/70">Loading...</p>
         </main>
       </div>
@@ -119,7 +119,7 @@ export default function SendPitch() {
     return (
       <div className="min-h-screen flex">
         <Sidebar />
-        <main className="flex-1 pl-[240px] flex items-center justify-center">
+        <main className="flex-1 md:ml-[4.5rem] pb-20 md:pb-0 flex items-center justify-center">
           <p className="font-body text-red-500">Investor not found.</p>
           <Link to="/startup/matches" className="ml-2 text-terracotta underline">Back to Matches</Link>
         </main>
@@ -130,7 +130,7 @@ export default function SendPitch() {
   return (
     <div className="min-h-screen flex bg-cream">
       <Sidebar />
-      <main className="flex-1 pl-[240px] overflow-auto">
+      <main className="flex-1 md:ml-[4.5rem] pb-20 md:pb-0 overflow-auto">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

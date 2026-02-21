@@ -182,7 +182,7 @@ export default function StartupEditProfile() {
     return (
       <div className="min-h-screen flex">
         <Sidebar />
-        <main className="flex-1 pl-[240px] p-8 overflow-auto">
+        <main className="flex-1 md:ml-[4.5rem] p-4 sm:p-6 md:p-8 pb-20 md:pb-8 overflow-auto">
           <StartupProfileView profile={profile} onEdit={handleEdit} />
         </main>
       </div>
@@ -193,7 +193,7 @@ export default function StartupEditProfile() {
   return (
     <div className="min-h-screen flex">
       <Sidebar />
-      <main className="flex-1 md:ml-[4.5rem] p-8 overflow-auto">
+      <main className="flex-1 md:ml-[4.5rem] p-4 sm:p-6 md:p-8 pb-20 md:pb-8 overflow-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

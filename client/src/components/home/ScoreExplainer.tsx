@@ -1,11 +1,11 @@
 export const ScoreExplainer = () => {
     return (
-        <section id="match-engine" className="bg-[#f7f4f0] py-[6.25rem] px-6 lg:px-[5rem] scroll-mt-28">
+        <section id="match-engine" className="bg-[#f7f4f0] py-12 sm:py-16 lg:py-[6.25rem] px-4 sm:px-6 lg:px-[5rem] scroll-mt-24">
             <div className="max-w-[80rem] mx-auto bg-white rounded-[1rem] shadow-sm border border-[#e8e3dc] overflow-hidden flex flex-col lg:flex-row">
 
                 {/* Visual Left */}
-                <div className="w-full lg:w-[40%] bg-[#fffbf8] p-8 border-b lg:border-b-0 lg:border-r border-[#e8e3dc] flex items-center justify-center relative min-h-[20rem]">
-                    <div className="relative w-[18rem] h-[18rem]">
+                <div className="w-full lg:w-[40%] bg-[#fffbf8] p-6 sm:p-8 border-b lg:border-b-0 lg:border-r border-[#e8e3dc] flex items-center justify-center relative min-h-[16rem] sm:min-h-[20rem]">
+                    <div className="relative w-[14rem] h-[14rem] sm:w-[18rem] sm:h-[18rem]">
                         {/* Chart Rings */}
                         <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 200 200">
                             {/* Ring 1 */}
@@ -36,11 +36,11 @@ export const ScoreExplainer = () => {
                 </div>
 
                 {/* Copy Right */}
-                <div className="w-full lg:w-[60%] p-8 lg:p-12">
+                <div className="w-full lg:w-[60%] p-5 sm:p-8 lg:p-12">
                     <h3 className="font-display font-semibold text-[2rem] lg:text-[2.25rem] text-[#3e3530] mb-6 tracking-tight">A score built on 14 weighted signals</h3>
                     <div className="text-[#6b615b] font-light text-[1.0625rem] leading-[1.7] space-y-4 mb-8">
                         <p>Our matchmaking engine doesn't rely on simple keyword matching. It analyzes the deep structural alignment between a startup's current trajectory and an investor's historical and stated preferences.</p>
-                        <p>By processing quantitative data (ticket sizes, runway, valuation expectations) alongside qualitative markers (ESG goals, geographic focus, sector nuances), VEGA computes a holistic compatibility score.</p>
+                        <p>By processing quantitative data (ticket sizes, runway, valuation expectations) alongside qualitative markers (ESG goals, geographic focus, sector nuances), NEXUS computes a holistic compatibility score.</p>
                     </div>
 
                     <div className="flex flex-wrap gap-2">

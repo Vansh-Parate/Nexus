@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'vega-dev-secret-change-in-production'
+const JWT_SECRET = process.env.JWT_SECRET || 'nexus-dev-secret-change-in-production'
 
 export function signToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })

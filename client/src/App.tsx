@@ -34,7 +34,7 @@ function ProtectedRoute({
 
 export default function App() {
   return (
-    <>
+    <div className="min-h-screen overflow-x-hidden">
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/register" element={<Register />} />
@@ -56,6 +56,6 @@ export default function App() {
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
-  </>
+    </div>
   )
 }

@@ -44,7 +44,7 @@ export default function InvestorProfile() {
     return (
       <div className="min-h-screen flex bg-cream">
         {isStartupViewer && <Sidebar />}
-        <main className={isStartupViewer ? 'flex-1 pl-[240px]' : 'flex-1'}>
+        <main className={isStartupViewer ? 'flex-1 md:ml-[4.5rem] pb-20 md:pb-0 overflow-auto' : 'flex-1'}>
           <div className="flex items-center justify-center min-h-screen font-body text-forest-ink/70">
             Loading investor profile...
           </div>
@@ -57,7 +57,7 @@ export default function InvestorProfile() {
     return (
       <div className="min-h-screen flex bg-cream">
         {isStartupViewer && <Sidebar />}
-        <main className={isStartupViewer ? 'flex-1 pl-[240px]' : 'flex-1'}>
+        <main className={isStartupViewer ? 'flex-1 md:ml-[4.5rem] pb-20 md:pb-0 overflow-auto' : 'flex-1'}>
           <div className="flex items-center justify-center min-h-screen font-body text-red-500">
             Investor not found
           </div>
@@ -219,7 +219,7 @@ export default function InvestorProfile() {
     return (
       <div className="min-h-screen flex bg-cream">
         <Sidebar />
-        <main className="flex-1 pl-[240px] overflow-auto">
+        <main className="flex-1 md:ml-[4.5rem] pb-20 md:pb-0 overflow-auto">
           {content}
         </main>
       </div>

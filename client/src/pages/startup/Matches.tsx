@@ -190,9 +190,9 @@ export default function StartupMatches() {
     <div className="min-h-screen flex bg-chalk-white">
       <Sidebar />
 
-      <main className="flex-1 pl-[240px] md:pl-0 md:ml-[4.5rem] flex">
+      <main className="flex-1 md:ml-[4.5rem] flex pb-20 md:pb-0">
         {/* ================= MATCHES SECTION ================= */}
-        <div className="flex-1 p-10 overflow-auto">
+        <div className="flex-1 p-4 sm:p-6 md:p-10 overflow-auto min-w-0">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

@@ -43,10 +43,10 @@ export default function Login() {
       className="min-h-screen bg-cream flex items-center justify-center p-6 relative"
     >
       <div className="absolute inset-0 bg-noise pointer-events-none" aria-hidden />
-      <div className="w-full max-w-[480px] bg-chalk-white border border-border rounded-2xl shadow-[var(--shadow-card)] p-8 relative">
+      <div className="w-full max-w-[480px] bg-chalk-white border border-border rounded-2xl shadow-[var(--shadow-card)] p-5 sm:p-8 relative mx-4 sm:mx-0">
         <div className="text-center mb-6">
           <Link to="/" className="font-display text-2xl font-bold text-forest-ink">
-            VEGA
+            NEXUS
           </Link>
           <h1 className="font-display text-3xl font-bold text-forest-ink mt-4">Welcome Back</h1>
         </div>

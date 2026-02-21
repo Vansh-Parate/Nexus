@@ -114,6 +114,6 @@ const server = createServer(app)
 setupWebSocket(server)
 
 server.listen(PORT, () => {
-  console.log(`VEGA API running at http://localhost:${PORT}`)
+  console.log(`NEXUS API running at http://localhost:${PORT}`)
   console.log(`WebSocket available at ws://localhost:${PORT}/ws`)
 })

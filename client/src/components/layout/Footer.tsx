@@ -4,12 +4,12 @@ import { Github, Linkedin, Twitter } from 'lucide-react'
 export function Footer() {
   return (
     <footer className="bg-forest-ink text-cream">
-      <div className="max-w-[1280px] mx-auto px-6 py-12">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <img src="/logo_2.jpeg" alt="VEGA Logo" className="w-5 h-5 rounded object-cover" />
-              <h3 className="font-display text-xl font-bold">VEGA</h3>
+              <img src="/logo.jpeg" alt="NEXUS Logo" className="w-5 h-5 rounded object-cover" />
+              <h3 className="font-display text-xl font-bold">NEXUS</h3>
             </div>
             <p className="font-body text-sm opacity-90">
               India&apos;s most structured startup–investor discovery engine.
@@ -35,7 +35,7 @@ export function Footer() {
         </div>
         <div className="mt-8 pt-8 border-t border-cream/20">
           <p className="font-body text-xs text-center opacity-80">
-            © {new Date().getFullYear()} VEGA — Startup India Initiative
+            © {new Date().getFullYear()} NEXUS — Startup India Initiative
           </p>
         </div>
       </div>

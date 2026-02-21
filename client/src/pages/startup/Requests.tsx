@@ -75,7 +75,7 @@ export default function StartupRequests() {
   return (
     <div className="min-h-screen flex">
       <Sidebar />
-      <main className="flex-1 md:ml-[4.5rem] p-8">
+      <main className="flex-1 md:ml-[4.5rem] p-4 sm:p-6 md:p-8 pb-20 md:pb-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-[800px] mx-auto">
           <div className="flex items-center gap-3 mb-6">
             <h1 className="font-display text-3xl font-bold text-forest-ink">Connection Requests</h1>

@@ -1,4 +1,4 @@
-# VEGA — Startup India Matchmaking Portal
+# NEXUS — Startup India Matchmaking Portal
 
 Neobrutalist startup–investor discovery platform. Find your perfect match.
 

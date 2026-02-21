@@ -125,7 +125,7 @@ async function seedDemoAppStartups() {
   ]
   for (let i = 0; i < demoCount; i++) {
     const r = startups[i]
-    const email = `demo-startup-${i + 1}@vega.demo`
+    const email = `demo-startup-${i + 1}@nexus.demo`
     const name = founderNames[i] || `Demo Founder ${i + 1}`
     const user = await prisma.user.upsert({
       where: { email },
@@ -162,7 +162,7 @@ async function seedDemoAppStartups() {
       },
     })
   }
-  console.log('Seeded', demoCount, 'demo app startups (login: demo-startup-N@vega.demo / password123)')
+  console.log('Seeded', demoCount, 'demo app startups (login: demo-startup-N@nexus.demo / password123)')
 }
 
 async function seedDemoAppInvestors() {
@@ -171,7 +171,7 @@ async function seedDemoAppInvestors() {
   const demoCount = Math.min(15, investors.length)
   for (let i = 0; i < demoCount; i++) {
     const r = investors[i]
-    const email = `demo-investor-${i + 1}@vega.demo`
+    const email = `demo-investor-${i + 1}@nexus.demo`
     const user = await prisma.user.upsert({
       where: { email },
       update: { name: r.investor_name },
@@ -209,7 +209,7 @@ async function seedDemoAppInvestors() {
       },
     })
   }
-  console.log('Seeded', demoCount, 'demo app investors (login: demo-investor-N@vega.demo / password123)')
+  console.log('Seeded', demoCount, 'demo app investors (login: demo-investor-N@nexus.demo / password123)')
 }
 
 async function main() {

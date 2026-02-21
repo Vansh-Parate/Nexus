@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 export const Hero = () => {
     return (
-        <section className="relative min-h-[90vh] flex items-center px-6 lg:px-[5rem] py-[7.5rem] overflow-hidden">
+        <section className="relative min-h-[85vh] sm:min-h-[90vh] flex items-center px-4 sm:px-6 lg:px-[5rem] py-12 sm:py-16 lg:py-[7.5rem] overflow-hidden">
             <div className="absolute inset-0 map-bg z-0"></div>
             <div className="absolute inset-0 gradient-mesh z-0"></div>
 

@@ -266,7 +266,7 @@ export default function StartupProfile() {
     return (
       <div className="min-h-screen flex">
         <Sidebar />
-        <main className="flex-1 md:ml-[4.5rem] overflow-auto">
+        <main className="flex-1 md:ml-[4.5rem] pb-20 md:pb-0 overflow-auto">
           {content}
         </main>
       </div>
