@@ -1,4 +1,4 @@
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useAuthStore } from '../../store/authStore';
 import { authApi } from '../../api/endpoints';
@@ -83,22 +83,23 @@ export function Sidebar() {
 
       {/* Main Nav */}
       <div className="flex flex-row md:flex-col gap-1 md:gap-1 w-full px-2 md:px-0 items-center justify-center">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.label}
-            to={item.to}
-            isActive={item.isActive ? (_, loc) => item.isActive!(loc.pathname, loc.search) : undefined}
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 w-14 h-14 md:w-full md:h-auto md:py-2.5 rounded-xl transition-all duration-200 relative ${isActive
-                ? 'bg-[#e8e3dc] text-[#d4a574]'
-                : 'text-[#9b918a] hover:bg-[#e8e3dc]/50 hover:text-[#3e3530]'
-              }`
-            }
-          >
-            <Icon icon={item.icon} className="text-[1.2rem]" strokeWidth="1.5" />
-            <span className="text-[0.6rem] font-medium leading-none tracking-wide hidden md:block">{item.label}</span>
-          </NavLink>
-        ))}
+        {navItems.map((item) => {
+          const active = item.isActive
+            ? item.isActive(location.pathname, location.search)
+            : location.pathname === item.to;
+          const baseClass = 'flex flex-col items-center justify-center gap-0.5 w-14 h-14 md:w-full md:h-auto md:py-2.5 rounded-xl transition-all duration-200 relative';
+          const activeClass = active ? 'bg-[#e8e3dc] text-[#d4a574]' : 'text-[#9b918a] hover:bg-[#e8e3dc]/50 hover:text-[#3e3530]';
+          return (
+            <Link
+              key={item.label}
+              to={item.to}
+              className={`${baseClass} ${activeClass}`}
+            >
+              <Icon icon={item.icon} className="text-[1.2rem]" strokeWidth="1.5" />
+              <span className="text-[0.6rem] font-medium leading-none tracking-wide hidden md:block">{item.label}</span>
+            </Link>
+          );
+        })}
 
         {/* Notification Bell */}
         <NotificationBell />
