@@ -6,10 +6,12 @@ import { signToken } from '../middleware/authMiddleware.js'
 const prisma = new PrismaClient()
 const router = Router()
 
+// In production (e.g. Vercel frontend + Render backend), cookie must be SameSite=None so it's sent cross-origin
+const isProduction = process.env.NODE_ENV === 'production'
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: '/',
 }
